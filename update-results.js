@@ -7,15 +7,17 @@
 //  הרצה אוטומטית:  GitHub Actions (ראה .github/workflows)
 //
 //  משתני סביבה נדרשים (או עדכן ידנית למטה):
-//    FOOTBALL_API_KEY  — מפתח חינמי מ-football-data.org
-//    SUPABASE_URL      — כתובת הפרויקט
-//    SUPABASE_ANON     — anon key
+//    FOOTBALL_API_KEY      — מפתח חינמי מ-football-data.org
+//    SUPABASE_URL          — כתובת הפרויקט
+//    SUPABASE_ANON         — anon key (קריאה בלבד)
+//    SUPABASE_SERVICE_ROLE — service role key (לעדכונים צד-שרת, עוקף RLS)
 // ═══════════════════════════════════════════════════════════════
 
 // ── הגדרות ─────────────────────────────────────────────────────
 const FOOTBALL_API_KEY = process.env.FOOTBALL_API_KEY || 'YOUR_FOOTBALL_DATA_API_KEY';
 const SUPABASE_URL     = process.env.SUPABASE_URL     || 'https://zmhdhuvuegpjlcjhirnx.supabase.co';
 const SUPABASE_ANON    = process.env.SUPABASE_ANON    || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptaGRodXZ1ZWdwamxjamhpcm54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NDU1MzUsImV4cCI6MjA5MzIyMTUzNX0.Jwn1g4_mlW4Z_tnzf0-DjQ63fn8U_LTgroCHd7iwRo0';
+const SUPABASE_WRITE_KEY = process.env.SUPABASE_SERVICE_ROLE || SUPABASE_ANON;
 
 // football-data.org: World Cup 2026 = competition code WC
 const FD_BASE = 'https://api.football-data.org/v4';
@@ -178,8 +180,8 @@ async function sbPatch(table, query, body) {
   var res = await fetch(url, {
     method: 'PATCH',
     headers: {
-      'apikey': SUPABASE_ANON,
-      'Authorization': 'Bearer ' + SUPABASE_ANON,
+      'apikey': SUPABASE_WRITE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_WRITE_KEY,
       'Content-Type': 'application/json',
       'Prefer': 'return=minimal',
     },
