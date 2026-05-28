@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מונדיאל 2026 · ניחושים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Light theme — ברירת מחדל */
+  --bg:      #f4f6fb;
+  --bg2:     #ffffff;
+  --bg3:     #eef1f8;
+  --bg4:     #e4e8f4;
+  --border:  #dce1ee;
+  --border2: #c8d0e4;
+  --shadow:  0 2px 12px rgba(0,0,0,.08);
+
+  --green:   #00a854;
+  --green-l: #e6f7ee;
+  --gold:    #d4900a;
+  --gold-l:  #fef3d8;
+  --blue:    #2c6fef;
+  --blue-l:  #e8f0ff;
+  --red:     #e53935;
+  --red-l:   #ffeaea;
+  --orange:  #e07b00;
+  --orange-l:#fff3e0;
+  --pink:    #c2185b;
+  --pink-l:  #fce4ec;
+  --cyan:    #00838f;
+  --cyan-l:  #e0f7fa;
+
+  --text:    #1a2236;
+  --text2:   #3a4a6b;
+  --muted:   #7a8aaa;
+  --muted2:  #b0bdd4;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#07090f; --bg2:#0c1018; --bg3:#111620; --bg4:#161d2c;
+    --border:#1a2030; --border2:#222d40; --shadow:0 2px 12px rgba(0,0,0,.4);
+    --green:#00e87a; --green-l:#00e87a18;
+    --gold:#ffd04a;  --gold-l:#ffd04a18;
+    --blue:#4d8fff;  --blue-l:#4d8fff18;
+    --red:#ff4d6a;   --red-l:#ff4d6a18;
+    --orange:#ff9d3a;--orange-l:#ff9d3a18;
+    --pink:#ff5c8a;  --pink-l:#ff5c8a18;
+    --cyan:#3de8e0;  --cyan-l:#3de8e018;
+    --text:#dde4f0; --text2:#9aaac8; --muted:#4a5568; --muted2:#2a3348;
+  }
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:"Heebo",system-ui,sans-serif}
+body{max-width:430px;margin:0 auto;position:relative}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* ── AUTH ── */
+#s-auth{align-items:center;justify-content:center;padding:32px 20px;
+  background:linear-gradient(160deg,#e8f0ff 0%,#f4f6fb 60%)}
+@media(prefers-color-scheme:dark){
+  #s-auth{background:linear-gradient(160deg,#0d1830 0%,#07090f 60%)}
+}
+.auth-logo{font-size:56px;margin-bottom:10px;animation:float 3s ease-in-out infinite;display:block;text-align:center}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.auth-title{font-size:30px;font-weight:900;letter-spacing:-1px;margin-bottom:4px;text-align:center}
+.auth-title span{color:var(--green)}
+.auth-sub{font-size:14px;color:var(--muted);margin-bottom:28px;text-align:center}
+.auth-card{width:100%;background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px;padding:24px 20px;box-shadow:var(--shadow)}
+.auth-tabs{display:flex;gap:4px;margin-bottom:22px;background:var(--bg3);border-radius:12px;padding:4px}
+.auth-tab{flex:1;padding:9px 0;border:none;background:none;color:var(--muted);
+  font-family:inherit;font-size:14px;font-weight:700;border-radius:9px;cursor:pointer;transition:all .2s}
+.auth-tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.field-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:700;margin-top:14px;display:block}
+.field-label:first-of-type{margin-top:0}
+.field-input{width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;
+  color:var(--text);padding:13px 14px;font-size:15px;outline:none;font-family:inherit;transition:border-color .2s}
+.field-input:focus{border-color:var(--blue);background:var(--bg2)}
+.field-input.ltr{direction:ltr}
+.auth-btn{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--green),#008040);
+  border:none;border-radius:12px;color:#fff;font-weight:900;font-size:16px;
+  padding:14px 0;cursor:pointer;font-family:inherit;letter-spacing:.2px;transition:opacity .15s}
+.auth-btn:active{transform:scale(.97);opacity:.9}
+.auth-err{font-size:13px;color:var(--red);text-align:center;margin-top:10px;min-height:18px;font-weight:600}
+.auth-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px}
+
+/* ── HEADER ── */
+.header{position:sticky;top:0;z-index:50;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:12px 16px 0;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hdr-brand .hdr-title{font-size:18px;font-weight:900;letter-spacing:-.5px;color:var(--text)}
+.hdr-brand .hdr-title span{color:var(--green)}
+.hdr-brand .hdr-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.hdr-pills{display:flex;gap:6px}
+.pill{text-align:center;padding:6px 12px;border-radius:12px;
+  background:var(--bg3);border:1px solid var(--border)}
+.pill .pv{font-size:17px;font-weight:900;color:var(--text)}
+.pill .pl{font-size:9px;color:var(--muted);margin-top:1px}
+.tabs{display:flex;border-top:1px solid var(--border);margin:0 -16px}
+.tab-btn{flex:1;background:none;border:none;border-bottom:2.5px solid transparent;
+  color:var(--muted);font-family:inherit;font-size:10px;font-weight:600;
+  padding:8px 2px 10px;cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab-btn .ti{font-size:18px}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green);font-weight:800}
+
+/* ── CONTENT ── */
+.content{padding:14px 14px 90px;flex:1}
+.sec{display:none}
+.sec.active{display:block}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;background:var(--bg2);
+  border-top:1px solid var(--border);display:flex;padding:6px 0;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+.nb{flex:1;background:none;border:none;color:var(--muted2);cursor:pointer;
+  font-family:inherit;font-size:10px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;transition:color .15s}
+.nb .ni{font-size:20px}
+.nb.active{color:var(--green);font-weight:800}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.card.gold{background:linear-gradient(135deg,var(--gold-l),var(--bg2));border-color:#e8c56a}
+@media(prefers-color-scheme:dark){.card.gold{background:linear-gradient(135deg,#140e00,#0d1520);border-color:#3a2800}}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.sec-title{font-size:13px;font-weight:800;margin-bottom:10px;color:var(--text2)}
+.hint{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6}
+.empty{text-align:center;color:var(--muted);padding:32px;font-size:14px}
+
+/* ── FILTER PILLS ── */
+.filter-row{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fp{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  background:var(--bg3);border:1.5px solid var(--border);color:var(--muted);
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.fp.active{background:var(--green-l);border-color:var(--green);color:var(--green)}
+.stabs{display:flex;gap:6px;margin-bottom:12px}
+.st{flex:1;padding:9px 0;border-radius:12px;font-size:13px;font-weight:700;
+  background:var(--bg3);border:1.5px solid var(--border);color:var(--muted);
+  cursor:pointer;font-family:inherit;transition:all .15s}
+.st.active{background:var(--bg2);border-color:var(--blue);color:var(--blue);box-shadow:0 1px 6px rgba(0,0,0,.06)}
+
+/* ── MATCH CARD ── */
+.mc{background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;
+  padding:13px 14px;margin-bottom:10px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.mc.done{background:var(--green-l);border-color:#b8e8cc}
+@media(prefers-color-scheme:dark){.mc.done{background:#0a1810;border-color:#1a2e1a}}
+.mbadge{position:absolute;top:0;left:0;font-size:11px;font-weight:800;padding:3px 10px;
+  border-bottom-right-radius:10px;color:#fff}
+.mmeta{font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;font-weight:600}
+.mrow{display:flex;align-items:center;gap:8px}
+.mteam{flex:1;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.mteam.aw{align-items:flex-start}
+.mflag{font-size:30px;line-height:1}
+.mname{font-size:12px;font-weight:700;color:var(--text2)}
+.mcenter{text-align:center;min-width:96px}
+.mresult{font-size:28px;font-weight:900;color:var(--green);letter-spacing:3px}
+.minputs{display:flex;align-items:center;gap:5px;justify-content:center}
+.si{width:42px;height:42px;text-align:center;font-size:18px;font-weight:800;
+  background:var(--bg3);border:2px solid var(--border2);border-radius:10px;
+  color:var(--text);outline:none;font-family:inherit}
+.si:focus{border-color:var(--blue)}
+.si:disabled{background:var(--bg3);border-color:var(--border);color:var(--muted)}
+.msep{color:var(--muted2);font-size:18px;font-weight:300}
+.msaved{font-size:11px;color:var(--green);margin-top:4px;font-weight:700}
+.savebtn{width:100%;margin-top:10px;background:linear-gradient(135deg,var(--green),#008040);
+  border:none;border-radius:12px;color:#fff;font-weight:800;font-size:14px;
+  padding:11px 0;cursor:pointer;font-family:inherit}
+.savebtn:active{transform:scale(.97)}
+
+/* ── QUESTION ── */
+.qtag{display:inline-block;border-radius:8px;padding:4px 10px;font-size:12px;
+  color:var(--text2);margin-bottom:10px;background:var(--bg3);font-weight:600}
+.qhdr{display:flex;justify-content:space-between;align-items:flex-start}
+.qtext{font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;flex:1;line-height:1.45}
+.qpts{background:var(--blue-l);color:var(--blue);border-radius:20px;padding:3px 10px;
+  font-size:12px;font-weight:700;white-space:nowrap;margin-right:8px}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qo{padding:11px 8px;border-radius:12px;font-size:13px;font-weight:600;
+  border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .15s}
+.qo.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue)}
+.qo.ok{border-color:var(--green);background:var(--green-l);color:var(--green);cursor:default}
+.qo.bad{border-color:var(--red);background:var(--red-l);color:var(--red);cursor:default}
+.qo.dis{cursor:default}
+.qsub{width:100%;margin-top:10px;background:linear-gradient(135deg,var(--blue),#1a4fb8);
+  border:none;border-radius:12px;color:#fff;font-weight:800;font-size:14px;
+  padding:11px 0;cursor:pointer;font-family:inherit}
+.qres{margin-top:10px;text-align:center;font-size:14px;font-weight:700}
+
+/* ── GLOBAL BETS ── */
+.badge{border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;border:1.5px solid}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:280px;overflow-y:auto;margin-bottom:12px}
+.tbtn{display:flex;align-items:center;gap:8px;padding:11px 12px;border-radius:12px;
+  background:var(--bg3);border:1.5px solid var(--border);cursor:pointer;
+  font-family:inherit;color:var(--text2);font-size:13px;font-weight:600;transition:all .15s}
+.tbtn.sel{color:var(--gold);border-color:var(--gold);background:var(--gold-l)}
+.player-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.pbtn{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:11px;
+  background:var(--bg3);border:1.5px solid var(--border);cursor:pointer;
+  font-family:inherit;color:var(--text2);font-size:13px;font-weight:600;transition:all .15s}
+.countrow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cinput{width:54px;height:40px;text-align:center;font-size:18px;font-weight:800;
+  background:var(--bg3);border:2px solid;border-radius:10px;
+  color:var(--text);outline:none;font-family:inherit}
+.gbtn{width:100%;border:none;border-radius:13px;font-weight:900;font-size:15px;
+  padding:14px 0;cursor:pointer;font-family:inherit;transition:opacity .15s;color:#fff}
+.gbtn:active{transform:scale(.97);opacity:.9}
+.sr-table .sr{display:flex;justify-content:space-between;padding:6px 0;
+  border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+.sr-table .sr.cur{color:var(--gold);font-weight:700}
+.hist-entry{display:flex;align-items:center;gap:10px;background:var(--bg3);
+  border-radius:11px;padding:9px 12px;margin-bottom:6px;border:1px solid var(--border)}
+
+/* ── LEADERBOARD ── */
+.lbrow{display:flex;align-items:center;gap:12px;border-radius:14px;
+  padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border);
+  background:var(--bg2);box-shadow:var(--shadow)}
+.lbrow.me{background:var(--blue-l);border-color:var(--blue)}
+@media(prefers-color-scheme:dark){
+  .lbrow.me{background:#0b1a28;border-color:#1a3855}
+}
+.skgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:14px}
+.ski{display:flex;justify-content:space-between;align-items:center;
+  background:var(--bg3);border-radius:9px;padding:7px 11px;border:1px solid var(--border)}
+
+/* ── INVITE ── */
+.inv-row{display:flex;gap:7px;margin-bottom:10px}
+.inv-inp{flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;
+  color:var(--text);padding:11px 14px;font-size:14px;outline:none;font-family:inherit;direction:ltr}
+.inv-inp:focus{border-color:var(--blue)}
+.inv-email{font-size:13px;color:var(--blue);background:var(--blue-l);
+  border-radius:9px;padding:7px 13px;margin-bottom:6px;direction:ltr;font-weight:600}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:8px}
+.chip{flex:1;text-align:center;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:13px;padding:10px 6px}
+.chip .cv{font-size:22px;font-weight:900}
+.chip .cl{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600}
+
+/* ── USER MENU ── */
+.umenu{position:fixed;top:64px;left:14px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:8px;z-index:100;min-width:170px;display:none;
+  box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.umenu.open{display:block}
+.umenu-item{padding:10px 14px;border-radius:10px;font-size:14px;font-weight:600;
+  cursor:pointer;transition:background .15s;color:var(--text)}
+.umenu-item:hover{background:var(--bg3)}
+.umenu-item.danger{color:var(--red)}
+.avatar-btn{background:var(--bg3);border:1.5px solid var(--border);border-radius:50%;
+  width:38px;height:38px;font-size:19px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── NOTIF ── */
+#notif{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-12px);
+  border-radius:30px;padding:10px 24px;font-weight:700;font-size:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:300;white-space:nowrap;color:#fff;
+  opacity:0;pointer-events:none;transition:all .3s ease}
+#notif.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── WHATSAPP BUTTON ── */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:14px 0;border:none;border-radius:14px;cursor:pointer;
+  font-family:inherit;font-weight:800;font-size:15px;color:#fff;
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  box-shadow:0 4px 16px rgba(37,211,102,.3);margin-top:14px;transition:opacity .15s}
+.wa-btn:active{transform:scale(.97);opacity:.9}
+.wa-icon{font-size:22px}
+
+/* ── SEARCH ── */
+.sinput{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;
+  color:var(--text);padding:11px 14px;font-size:14px;outline:none;font-family:inherit;margin-bottom:10px}
+.sinput:focus{border-color:var(--blue)}
+
+input[type=number]::-webkit-inner-spin-button{opacity:.5}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+button{touch-action:manipulation}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════════════ -->
+<div id="s-auth" class="screen active">
+  <div class="auth-logo">🌍</div>
+  <div class="auth-title">מונדיאל <span>2026</span></div>
+  <div class="auth-sub">ניחוש תוצאות עם חברים</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login">כניסה</button>
+      <button class="auth-tab" id="tab-reg">הרשמה</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="form-register" style="display:none">
+      <div class="field-label">שם מלא</div>
+      <input class="field-input" id="reg-name" type="text" placeholder="ישראל ישראלי" />
+      <div class="field-label">כתובת מייל</div>
+      <input class="field-input ltr" id="reg-email" type="email" placeholder="you@example.com" />
+      <div class="field-label">סיסמה (לפחות 6 תווים)</div>
+      <input class="field-input ltr" id="reg-pass" type="password" placeholder="••••••" />
+      <div class="field-label">אימות סיסמה</div>
+      <input class="field-input ltr" id="reg-pass2" type="password" placeholder="••••••" />
+      <button class="auth-btn" id="btn-register">הרשמה ←</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="field-label">כתובת מייל</div>
+      <input class="field-input ltr" id="log-email" type="email" placeholder="you@example.com" />
+      <div class="field-label">סיסמה</div>
+      <input class="field-input ltr" id="log-pass" type="password" placeholder="••••••" />
+      <button class="auth-btn" id="btn-login">כניסה ←</button>
+    </div>
+
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-note" id="auth-note">מחובר ל-Supabase · הנתונים נשמרים בענן</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     APP SCREEN
+══════════════════════════════════════════════════ -->
+<div id="s-app" class="screen">
+
+  <div class="header">
+    <div class="hdr-top">
+      <div class="hdr-brand">
+        <div class="hdr-title">🌍 מונדיאל <span>2026</span></div>
+        <div class="hdr-sub" id="hdr-sub">שלום!</div>
+      </div>
+      <div class="hdr-pills">
+        <div class="pill" style="border-color:#4d8fff33">
+          <div class="pv" id="hdr-score" style="color:var(--blue)">0</div>
+          <div class="pl">ניקוד</div>
+        </div>
+        <div class="pill" style="border-color:#ffd04a33">
+          <div class="pv" id="hdr-rank" style="color:var(--gold)">#–</div>
+          <div class="pl">מיקום</div>
+        </div>
+        <button class="avatar-btn" id="avatar-btn" onclick="toggleMenu()">👤</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('matches',0)"><span class="ti">⚽</span>משחקים</button>
+      <button class="tab-btn" onclick="switchTab('global',1)"><span class="ti">🏆</span>הימורים</button>
+      <button class="tab-btn" onclick="switchTab('questions',2)"><span class="ti">❓</span>שאלות</button>
+      <button class="tab-btn" onclick="switchTab('table',3)"><span class="ti">📊</span>טבלה</button>
+      <button class="tab-btn" onclick="switchTab('invite',4)"><span class="ti">✉️</span>הזמנה</button>
+      <button class="tab-btn" id="tab-test-top" style="display:none" onclick="switchTab('test',5)"><span class="ti">🧪</span>בדיקה</button>
+    </div>
+  </div>
+
+  <div class="umenu" id="umenu">
+    <div class="umenu-item" id="umenu-name" style="font-weight:800;color:var(--text);cursor:default"></div>
+    <div class="umenu-item" id="umenu-email" style="font-size:11px;color:var(--muted);cursor:default;direction:ltr"></div>
+    <div style="height:1px;background:var(--border);margin:6px 0"></div>
+    <div class="umenu-item danger" onclick="doLogout()">🚪 יציאה</div>
+  </div>
+
+  <div class="content">
+
+    <!-- TEST: PL matches (hidden after WC start) -->
+    <div class="sec" id="sec-test">
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px">🧪 משחקי בדיקה — פרמייר ליג</div>
+      <div class="stabs">
+        <button class="st active" onclick="setTestSub('open',this)">⚽ פתוחים</button>
+        <button class="st" onclick="setTestSub('done',this)">✅ תוצאות</button>
+      </div>
+      <div id="match-list-test"></div>
+      <div class="hint">90 דק': מדויק 10 · כיוון 5 (ללא הארכה/פנדלים)</div>
+    </div>
+
+    <!-- MATCHES -->
+    <div class="sec active" id="sec-matches">
+      <div class="filter-row" id="gf-row"></div>
+      <div class="stabs">
+        <button class="st active" onclick="setSub('open',this)">⚽ פתוחים</button>
+        <button class="st" onclick="setSub('done',this)">✅ תוצאות</button>
+      </div>
+      <div id="match-list"></div>
+      <div class="hint">90 דק': מדויק 10 · כיוון 5 &nbsp;|&nbsp; הארכה: מדויק 15 · כיוון 8 &nbsp;|&nbsp; פנדלים: מדויק 20 · מנצח 10</div>
+    </div>
+
+    <!-- GLOBAL BETS -->
+    <div class="sec" id="sec-global">
+      <div class="sec-title" style="color:var(--gold)">🏆 הימור אלוף</div>
+      <div class="card gold">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:14px;font-weight:900;color:var(--gold)">🏆 מי יזכה במונדיאל?</div>
+            <div style="font-size:11px;color:#776;margin-top:3px">ניחוש נכון = <b style="color:var(--gold)" id="champ-pts-lbl">50</b> נקודות</div>
+          </div>
+          <span class="badge" id="champ-stage-lbl" style="color:var(--gold);border-color:#ffd04a44;background:#ffd04a11">לפני הטורניר</span>
+        </div>
+        <div id="champ-cur" style="display:none;margin-top:12px;background:#1a1400;border:1px solid #3a2800;border-radius:11px;padding:10px 13px;align-items:center;gap:10px"></div>
+      </div>
+      <input class="sinput" id="team-search" placeholder="🔍 חפש קבוצה..." oninput="renderTeamGrid()">
+      <div class="team-grid" id="team-grid"></div>
+      <button class="gbtn" id="champ-save-btn" onclick="saveChampion()"
+        style="background:linear-gradient(135deg,var(--gold),#cc9900);color:#1a0900;display:none">
+        ✓ שמור הימור אלוף
+      </button>
+      <div id="champ-hist" style="margin-top:14px"></div>
+      <div class="card" style="margin-top:12px">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px">📊 ניקוד לפי שלב שינוי</div>
+        <div class="sr-table" id="sr-table"></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-title" style="color:var(--pink)">⚽ מלך השערים</div>
+      <div class="card" style="border-color:#ff5c8a33">
+        <div class="player-grid" id="scorer-grid"></div>
+        <div class="countrow" id="scorer-custom-row" style="display:none;margin-bottom:8px">
+          <span style="font-size:13px;color:#aaa">שם השחקן:</span>
+          <input type="text" id="scorer-custom" placeholder="הקלד שם..." oninput="checkScorerBtn()"
+            style="flex:1;background:#141c2e;border:2px solid var(--pink);border-radius:9px;color:#fff;padding:7px 10px;font-size:13px;outline:none;font-family:inherit">
+        </div>
+        <div class="countrow" id="scorer-count-row" style="display:none">
+          <span style="font-size:13px;color:#aaa">שערים צפויים:</span>
+          <input class="cinput" id="scorer-count" type="number" min="0" max="20" style="border-color:var(--pink)" oninput="checkScorerBtn()">
+        </div>
+        <button class="gbtn" id="scorer-save-btn" onclick="saveScorer()"
+          style="background:linear-gradient(135deg,var(--pink),#cc2255);color:#fff;display:none">שמור מלך שערים</button>
+        <div id="scorer-saved" style="display:none"></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-title" style="color:var(--cyan)">🅰️ מלך הבישולים</div>
+      <div class="card" style="border-color:#3de8e033">
+        <div class="player-grid" id="assist-grid"></div>
+        <div class="countrow" id="assist-custom-row" style="display:none;margin-bottom:8px">
+          <span style="font-size:13px;color:#aaa">שם השחקן:</span>
+          <input type="text" id="assist-custom" placeholder="הקלד שם..." oninput="checkAssistBtn()"
+            style="flex:1;background:#141c2e;border:2px solid var(--cyan);border-radius:9px;color:#fff;padding:7px 10px;font-size:13px;outline:none;font-family:inherit">
+        </div>
+        <div class="countrow" id="assist-count-row" style="display:none">
+          <span style="font-size:13px;color:#aaa">בישולים צפויים:</span>
+          <input class="cinput" id="assist-count" type="number" min="0" max="20" style="border-color:var(--cyan)" oninput="checkAssistBtn()">
+        </div>
+        <button class="gbtn" id="assist-save-btn" onclick="saveAssist()"
+          style="background:linear-gradient(135deg,var(--cyan),#009994);color:#001a1a;display:none">שמור מלך בישולים</button>
+        <div id="assist-saved" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- QUESTIONS -->
+    <div class="sec" id="sec-questions">
+      <div class="card" style="margin-bottom:13px">
+        <div style="font-size:14px;font-weight:900;margin-bottom:3px">📅 שאלות יום 14 ביוני</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:11px">סטטיסטיקות ממשחקי אתמול · ענה לפני חצות</div>
+        <div class="chips">
+          <div class="chip"><div class="cv" id="qc-ok" style="color:var(--green)">0</div><div class="cl">נכונות</div></div>
+          <div class="chip"><div class="cv" id="qc-bad" style="color:var(--red)">0</div><div class="cl">שגויות</div></div>
+          <div class="chip"><div class="cv" id="qc-left" style="color:var(--blue)">4</div><div class="cl">נותרו</div></div>
+        </div>
+      </div>
+      <div id="q-list"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="sec" id="sec-table">
+      <div class="card" style="margin-bottom:13px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:15px;font-weight:900;margin-bottom:2px">📊 טבלת דירוג</div>
+            <div style="font-size:11px;color:var(--muted)">מתעדכנת בסוף כל יום</div>
+          </div>
+          <button onclick="shareLeaderboardWA()" class="wa-btn" style="width:auto;padding:10px 16px;margin-top:0;font-size:13px">
+            <span class="wa-icon">📲</span> שתף
+          </button>
+        </div>
+      </div>
+      <div id="lb-list"></div>
+      <button onclick="shareLeaderboardWA()" class="wa-btn">
+        <span class="wa-icon">💬</span> שתף טבלה ב-WhatsApp
+      </button>
+      <div class="skgrid" id="sk-grid"></div>
+    </div>
+
+    <!-- INVITE -->
+    <div class="sec" id="sec-invite">
+      <div class="card" style="margin-bottom:13px">
+        <div style="font-size:14px;font-weight:900;margin-bottom:3px">✉️ הזמן חברים</div>
+        <div style="font-size:11px;color:var(--muted)">המנצח מקבל כבוד נצחי 🏆</div>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px">שלח הזמנה לחברים. הם יקבלו לינק להצטרפות.</p>
+      <div class="inv-row">
+        <input class="inv-inp" id="inv-email" type="email" placeholder="email@example.com"
+               onkeydown="if(event.key==='Enter')sendInvite()">
+        <button class="gbtn" onclick="sendInvite()"
+          style="width:auto;padding:0 18px;background:linear-gradient(135deg,var(--green),#00b060);color:#001a0a;font-size:13px">שלח</button>
+      </div>
+      <div id="inv-msg" style="font-size:12px;min-height:16px;margin-bottom:8px"></div>
+      <div id="inv-list"></div>
+      <div style="margin-top:16px;background:var(--bg3);border:1px dashed #1a2a44;border-radius:11px;padding:13px">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">לינק ישיר לקבוצה</div>
+        <div style="font-size:12px;color:var(--blue);direction:ltr;word-break:break-all">https://mundial2026.app/join/GRP-4F8A2</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <div class="bnav">
+    <button class="nb active" onclick="switchTab('matches',0)"><span class="ni">⚽</span>משחקים</button>
+    <button class="nb" onclick="switchTab('global',1)"><span class="ni">🏆</span>הימורים</button>
+    <button class="nb" onclick="switchTab('questions',2)"><span class="ni">❓</span>שאלות</button>
+    <button class="nb" onclick="switchTab('table',3)"><span class="ni">📊</span>טבלה</button>
+    <button class="nb" onclick="switchTab('invite',4)"><span class="ni">✉️</span>הזמנה</button>
+    <button class="nb" id="tab-test-bot" style="display:none" onclick="switchTab('test',5)"><span class="ni">🧪</span>בדיקה</button>
+  </div>
+</div><!-- /s-app -->
+
+<!-- מודל ניחושי שחקנים -->
+<div id="preds-modal" style="display:none;position:fixed;inset:0;background:#000a;z-index:9999;overflow-y:auto;padding:16px" onclick="closePredModal(event)">
+  <div style="background:#1a1a2a;border:1px solid #2a2a4a;border-radius:16px;margin:0 auto;max-width:420px;padding:20px">
+    <div style="font-weight:900;font-size:15px;margin-bottom:4px;text-align:center;direction:rtl" id="preds-modal-title"></div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:14px">ניחושי כל השחקנים</div>
+    <div id="preds-modal-list"></div>
+    <button onclick="document.getElementById('preds-modal').style.display='none'"
+      style="width:100%;margin-top:16px;padding:10px;background:#2a2a3a;border:1.5px solid #3a3a5a;border-radius:10px;color:#aaa;font-size:13px;cursor:pointer;font-family:inherit">סגור</button>
+  </div>
+</div>
+
+<div id="notif"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  SUPABASE CONFIG
+// ════════════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://zmhdhuvuegpjlcjhirnx.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptaGRodXZ1ZWdwamxjamhpcm54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NDU1MzUsImV4cCI6MjA5MzIyMTUzNX0.Jwn1g4_mlW4Z_tnzf0-DjQ63fn8U_LTgroCHd7iwRo0';
+
+let _supabase = null;
+let _sbLoading = null;
+async function getSupabase() {
+  if (_supabase) return _supabase;
+  if (_sbLoading) return _sbLoading;
+  _sbLoading = new Promise((res, rej) => {
+    if (window.supabase) {
+      _supabase = window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON.trim());
+      res(_supabase); return;
+    }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.onload = function() {
+      var url = SUPABASE_URL.trim();
+      var key = SUPABASE_ANON.trim();
+      if (key === 'YOUR_ANON_KEY' || key.length < 20) {
+        rej(new Error('key not set'));
+        return;
+      }
+      console.log('[Supabase] connecting to:', url);
+      console.log('[Supabase] key starts with:', key.substring(0, 20) + '...');
+      _supabase = window.supabase.createClient(url, key);
+      res(_supabase);
+    };
+    s.onerror = function() { rej(new Error('Cannot load Supabase SDK')); };
+    document.head.appendChild(s);
+  });
+  return _sbLoading;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DB LAYER
+// ════════════════════════════════════════════════════════════════
+var DB = {
+
+  register: async function(email, password, name) {
+    var sb = await getSupabase();
+    var result = await sb.auth.signUp({
+      email: email, password: password,
+      options: { data: { name: name } },
+    });
+    if (result.error) {
+      console.error('[register error]', result.error);
+      throw new Error(_heErr(result.error.message || result.error.msg || JSON.stringify(result.error)));
+    }
+    return { email: email, name: name, id: result.data.user.id };
+  },
+
+  login: async function(email, password) {
+    var sb = await getSupabase();
+    var result = await sb.auth.signInWithPassword({ email: email, password: password });
+    if (result.error) throw new Error(_heErr(result.error.message));
+    var name = await DB._getName(result.data.user.id);
+    return { email: email, name: name, id: result.data.user.id };
+  },
+
+  logout: async function() {
+    var sb = await getSupabase();
+    await sb.auth.signOut();
+  },
+
+  getSession: async function() {
+    var sb = await getSupabase();
+    var sess = await sb.auth.getSession();
+    var session = sess.data.session;
+    if (!session) return null;
+    var name = await DB._getName(session.user.id);
+    return { email: session.user.email, name: name, id: session.user.id };
+  },
+
+  setSession: async function() {
+    // Supabase manages session automatically
+  },
+
+  _getName: async function(uid) {
+    var sb = await getSupabase();
+    var result = await sb.from('profiles').select('name').eq('id', uid).single();
+    return (result.data && result.data.name) || '';
+  },
+
+  getUserData: async function(email) {
+    var sb = await getSupabase();
+    var userResult = await sb.auth.getUser();
+    var user = userResult.data.user;
+    if (!user) throw new Error('not logged in');
+
+    var result = await sb
+      .from('user_data')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (result.error || !result.data) {
+      var blank = _blankData();
+      await sb.from('user_data').insert({ id: user.id, score: blank.score, predictions: blank.predictions, answers: blank.answers, champ_bet: blank.champBet, champ_history: blank.champHistory, scorer_bet: blank.scorerBet, assist_bet: blank.assistBet, invites: blank.invites });
+      return blank;
+    }
+    var data = result.data;
+    return {
+      score:        data.score        || 0,
+      predictions:  data.predictions  || {},
+      answers:      data.answers      || {},
+      champBet:     data.champ_bet    || null,
+      champHistory: data.champ_history|| [],
+      scorerBet:    data.scorer_bet   || null,
+      assistBet:    data.assist_bet   || null,
+      invites:      data.invites      || [],
+      champSel:     null,
+      scorerSel:    null,
+      assistSel:    null,
+    };
+  },
+
+  saveUserData: async function(email, d) {
+    var sb = await getSupabase();
+    var userResult = await sb.auth.getUser();
+    var user = userResult.data.user;
+    if (!user) return;
+
+    var result = await sb.from('user_data').upsert({
+      id:            user.id,
+      score:         d.score        || 0,
+      predictions:   d.predictions  || {},
+      answers:       d.answers      || {},
+      champ_bet:     d.champBet     || null,
+      champ_history: d.champHistory || [],
+      scorer_bet:    d.scorerBet    || null,
+      assist_bet:    d.assistBet    || null,
+      invites:       d.invites      || [],
+    });
+    if (result.error) console.error('saveUserData error:', result.error.message);
+  },
+
+  getLeaderboard: async function() {
+    var sb = await getSupabase();
+    var profilesResult = await sb.from('profiles').select('id, name, email');
+    var userDataResult  = await sb.from('user_data').select('id, score, predictions, answers, champ_bet');
+    var profiles = profilesResult.data;
+    if (!profiles) return [];
+
+    var dataMap = {};
+    (userDataResult.data || []).forEach(function(u) { dataMap[u.id] = u; });
+
+    return profiles.map(function(p) {
+      var d = dataMap[p.id] || {};
+      return {
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        av: '\u{1F464}',
+        score: d.score || 0,
+        bets: Object.keys(d.predictions || {}).length,
+        qa: Object.values(d.answers || {}).filter(function(a) { return a.correct; }).length,
+        champion: d.champ_bet ? d.champ_bet.teamId : null,
+        predictions: d.predictions || {},
+      };
+    });
+  },
+};
+
+function _blankData() {
+  return {
+    score:0, predictions:{}, answers:{},
+    champBet:null, champHistory:[],
+    scorerBet:null, assistBet:null, invites:[],
+    champSel:null, scorerSel:null, assistSel:null,
+  };
+}
+
+function _heErr(msg) {
+  if (!msg) return 'שגיאה לא ידועה';
+  var m = msg.toLowerCase();
+  if (m.includes('signup') && m.includes('disabled') || m.includes('signups not allowed'))
+    return 'ההרשמה מושבתת — כנס ל-Supabase: Authentication → Providers → Email → Enable Sign Ups';
+  if (m.includes('already registered') || m.includes('user already'))
+    return 'מייל זה כבר רשום במערכת';
+  if (m.includes('invalid login') || m.includes('invalid_credentials') || m.includes('invalid email or password'))
+    return 'מייל או סיסמה שגויים';
+  if (m.includes('email not confirmed'))
+    return 'יש לאמת את המייל — כבה Confirm Email ב-Supabase Auth';
+  if (m.includes('network') || m.includes('fetch') || m.includes('failed to fetch'))
+    return 'שגיאת תקשורת — בדוק חיבור לאינטרנט';
+  if (m.includes('invalid api key') || m.includes('401'))
+    return 'מפתח API שגוי — בדוק SUPABASE_ANON בקובץ ה-HTML';
+  if (m.includes('password should be'))
+    return 'הסיסמה חייבת להכיל לפחות 6 תווים';
+  console.error('[Supabase error]', msg);
+  return 'שגיאה: ' + msg;
+}
+
+// ──────────────────────────────────────────────
+//  STATIC DATA
+// ──────────────────────────────────────────────
+var TEAMS = [
+  {id:'ARG',name:'ארגנטינה',flag:'🇦🇷'},{id:'BRA',name:'ברזיל',flag:'🇧🇷'},
+  {id:'ESP',name:'ספרד',flag:'🇪🇸'},{id:'GER',name:'גרמניה',flag:'🇩🇪'},
+  {id:'FRA',name:'צרפת',flag:'🇫🇷'},{id:'ENG',name:'אנגליה',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {id:'POR',name:'פורטוגל',flag:'🇵🇹'},{id:'NED',name:'הולנד',flag:'🇳🇱'},
+  {id:'MAR',name:'מרוקו',flag:'🇲🇦'},{id:'JPN',name:'יפן',flag:'🇯🇵'},
+  {id:'MEX',name:'מקסיקו',flag:'🇲🇽'},{id:'POL',name:'פולין',flag:'🇵🇱'},
+  {id:'USA',name:'ארה״ב',flag:'🇺🇸'},{id:'CAN',name:'קנדה',flag:'🇨🇦'},
+  {id:'SEN',name:'סנגל',flag:'🇸🇳'},{id:'URU',name:'אורוגוואי',flag:'🇺🇾'},
+];
+var PLAYERS = [
+  {id:'p1',name:'ליאו מסי',flag:'🇦🇷'},{id:'p2',name:'קיליאן מבאפה',flag:'🇫🇷'},
+  {id:'p3',name:'ארלינג הולאנד',flag:'🇳🇱'},{id:'p4',name:'הארי קיין',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {id:'p5',name:'ויניסיוס ג׳וניור',flag:'🇧🇷'},{id:'p6',name:'ג׳וד בלינגהאם',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {id:'p7',name:'לאמין יאמל',flag:'🇪🇸'},{id:'p8',name:'כ. רונאלדו',flag:'🇵🇹'},
+];
+var CHAMP_PTS   = {groups:500,r16:300,quarters:200,semis:100};
+var CHAMP_LABEL = {groups:'לפני הטורניר',r16:'אחרי שלב בתים',quarters:'אחרי שמינית גמר',semis:'אחרי רבע גמר'};
+var CURRENT_STAGE = 'groups';
+
+// ──────────────────────────────────────────────
+//  DYNAMIC DATA
+// ──────────────────────────────────────────────
+var MATCHES   = [];
+var QUESTIONS = [];
+
+var DEMO_MATCHES = [
+  {id:1001,api_id:'d1',match_date:'2026-06-11T18:00:00Z',lock_time:'2026-06-11T17:00:00Z',group_name:'קבוצה A',stage:'GROUP',home_team:'ארגנטינה',away_team:'פולין',home_flag:'🇦🇷',away_flag:'🇵🇱',has_extra_time:false,home_score:null,away_score:null,home_score_et:null,away_score_et:null,home_score_pen:null,away_score_pen:null,status:'SCHEDULED'},
+  {id:1002,api_id:'d2',match_date:'2026-06-11T21:00:00Z',lock_time:'2026-06-11T20:00:00Z',group_name:'קבוצה A',stage:'GROUP',home_team:'ברזיל',away_team:'מקסיקו',home_flag:'🇧🇷',away_flag:'🇲🇽',has_extra_time:false,home_score:null,away_score:null,home_score_et:null,away_score_et:null,home_score_pen:null,away_score_pen:null,status:'SCHEDULED'},
+  {id:1003,api_id:'d3',match_date:'2026-06-12T18:00:00Z',lock_time:'2026-06-12T17:00:00Z',group_name:'קבוצה B',stage:'GROUP',home_team:'ספרד',away_team:'גרמניה',home_flag:'🇪🇸',away_flag:'🇩🇪',has_extra_time:false,home_score:null,away_score:null,home_score_et:null,away_score_et:null,home_score_pen:null,away_score_pen:null,status:'SCHEDULED'},
+  {id:1004,api_id:'d4',match_date:'2026-06-12T21:00:00Z',lock_time:'2026-06-12T20:00:00Z',group_name:'קבוצה B',stage:'GROUP',home_team:'צרפת',away_team:'הולנד',home_flag:'🇫🇷',away_flag:'🇳🇱',has_extra_time:false,home_score:null,away_score:null,home_score_et:null,away_score_et:null,home_score_pen:null,away_score_pen:null,status:'SCHEDULED'},
+  {id:1005,api_id:'d5',match_date:'2026-06-13T18:00:00Z',lock_time:'2026-06-13T17:00:00Z',group_name:'קבוצה C',stage:'GROUP',home_team:'אנגליה',away_team:'יפן',home_flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',away_flag:'🇯🇵',has_extra_time:false,home_score:null,away_score:null,home_score_et:null,away_score_et:null,home_score_pen:null,away_score_pen:null,status:'SCHEDULED'},
+  {id:1006,api_id:'d6',match_date:'2026-06-13T21:00:00Z',lock_time:'2026-06-13T20:00:00Z',group_name:'קבוצה C',stage:'GROUP',home_team:'פורטוגל',away_team:'מרוקו',home_flag:'🇵🇹',away_flag:'🇲🇦',has_extra_time:false,home_score:null,away_score:null,home_score_et:null,away_score_et:null,home_score_pen:null,away_score_pen:null,status:'SCHEDULED'},
+];
+
+function mapMatch(m) {
+  return {
+    id:        m.id,
+    apiId:     m.api_id,
+    date:      new Date(m.match_date).toLocaleDateString('he-IL'),
+    time:      new Date(m.match_date).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}),
+    lockTime:  new Date(m.lock_time),
+    group:     m.group_name || m.stage,
+    stage:     m.stage,
+    home:      m.home_team,
+    away:      m.away_team,
+    hf:        m.home_flag || '🏳️',
+    af:        m.away_flag || '🏳️',
+    hasET:     m.has_extra_time || false,
+    result:    m.home_score    !== null ? { h: m.home_score,     a: m.away_score     } : null,
+    resultET:  m.home_score_et !== null ? { h: m.home_score_et,  a: m.away_score_et  } : null,
+    resultPen: m.home_score_pen!== null ? { h: m.home_score_pen, a: m.away_score_pen } : null,
+    status:    m.status,
+  };
+}
+
+async function loadMatchesFromDB() {
+  try {
+    var sb = await getSupabase();
+    var result = await sb
+      .from('matches')
+      .select('*')
+      .order('match_date', { ascending: true });
+
+    if (result.error) throw result.error;
+    if (!result.data || result.data.length === 0) {
+      console.log('DB empty — showing demo matches');
+      MATCHES = DEMO_MATCHES.map(mapMatch);
+      return;
+    }
+
+    MATCHES = result.data.map(mapMatch);
+  } catch(e) {
+    console.warn('loadMatchesFromDB failed, using demo:', e.message);
+    MATCHES = DEMO_MATCHES.map(mapMatch);
+  }
+}
+
+async function loadQuestionsFromDB() {
+  var sb = await getSupabase();
+  var today = new Date().toISOString().split('T')[0];
+
+  var result = await sb
+    .from('questions')
+    .select('*, matches(home_team, away_team, home_flag, away_flag)')
+    .eq('question_date', today)
+    .eq('active', true)
+    .order('id');
+
+  if (result.error) { console.error('loadQuestions:', result.error.message); return; }
+
+  QUESTIONS = (result.data || []).map(function(q) {
+    var m = q.matches;
+    var matchLabel = m
+      ? (m.home_flag || '') + ' ' + m.home_team + ' – ' + m.away_team + ' ' + (m.away_flag || '')
+      : 'שאלה יומית';
+    return {
+      id:         String(q.id),
+      matchLabel: matchLabel,
+      bg:         '#182e18',
+      text:       q.text,
+      options:    typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+      correct:    q.correct,
+      pts:        q.points,
+    };
+  });
+}
+
+function isMatchLocked(match) {
+  if (match.result !== null) return true;
+  if (match.status === 'LIVE') return true;
+  if (!match.lockTime) return false;
+  return new Date() >= match.lockTime;
+}
+
+function lockLabel(match) {
+  if (match.result !== null || match.status === 'FINISHED') return null;
+  if (match.status === 'LIVE') return '🔴 משחק חי';
+  if (isMatchLocked(match)) return '🔒 נעול';
+  var diff = match.lockTime - new Date();
+  var hrs  = Math.floor(diff / 3600000);
+  var mins = Math.floor((diff % 3600000) / 60000);
+  if (hrs > 0) return '\u23F1 נסגר בעוד ' + hrs + 'ש\u05F3 ' + mins + 'ד\u05F3';
+  return '\u23F1 נסגר בעוד ' + mins + ' דקות';
+}
+
+// ──────────────────────────────────────────────
+//  APP STATE
+// ──────────────────────────────────────────────
+var CUR_USER = null;
+var D = null;
+
+function T(id) { return TEAMS.find(function(t) { return t.id === id; }); }
+function P(id) { return PLAYERS.find(function(p) { return p.id === id; }); }
+
+async function syncD() { await DB.saveUserData(CUR_USER.email, D); }
+
+// ──────────────────────────────────────────────
+//  AUTH
+// ──────────────────────────────────────────────
+function authMode(mode) {
+  var fLogin = document.getElementById('form-login');
+  var fReg   = document.getElementById('form-register');
+  var tLogin = document.getElementById('tab-login');
+  var tReg   = document.getElementById('tab-reg');
+  var err    = document.getElementById('auth-err');
+  if (!fLogin || !fReg) { console.error('auth forms not found'); return; }
+  fLogin.style.display = mode === 'login'    ? 'block' : 'none';
+  fReg.style.display   = mode === 'register' ? 'block' : 'none';
+  tLogin.classList.toggle('active', mode === 'login');
+  tReg.classList.toggle('active',   mode === 'register');
+  if (err) err.textContent = '';
+}
+
+async function doRegister() {
+  var name  = document.getElementById('reg-name').value.trim();
+  var email = document.getElementById('reg-email').value.trim();
+  var pass  = document.getElementById('reg-pass').value;
+  var pass2 = document.getElementById('reg-pass2').value;
+  var err   = document.getElementById('auth-err');
+  var btn   = document.querySelector('#form-register .auth-btn');
+  if (!name)  { err.textContent='אנא הזן שם מלא'; return; }
+  if (!email.includes('@')) { err.textContent='מייל לא תקין'; return; }
+  if (pass.length < 6) { err.textContent='סיסמה חייבת להכיל לפחות 6 תווים'; return; }
+  if (pass !== pass2)  { err.textContent='הסיסמאות אינן תואמות'; return; }
+  err.textContent = '';
+  btn.textContent = '⏳ מתחבר...'; btn.disabled = true;
+  try {
+    var user = await DB.register(email, pass, name);
+    await DB.setSession(user);
+    await launchApp(user);
+  } catch(e) {
+    err.textContent = e.message;
+    btn.textContent = 'הרשמה ←'; btn.disabled = false;
+  }
+}
+
+async function doLogin() {
+  var email = document.getElementById('log-email').value.trim();
+  var pass  = document.getElementById('log-pass').value;
+  var err   = document.getElementById('auth-err');
+  var btn   = document.querySelector('#form-login .auth-btn');
+  if (!email) { err.textContent='אנא הזן מייל'; return; }
+  if (!pass)  { err.textContent='אנא הזן סיסמה'; return; }
+  err.textContent = '';
+  btn.textContent = '⏳ מתחבר...'; btn.disabled = true;
+  try {
+    var user = await DB.login(email, pass);
+    await DB.setSession(user);
+    await launchApp(user);
+  } catch(e) {
+    err.textContent = e.message;
+    btn.textContent = 'כניסה ←'; btn.disabled = false;
+  }
+}
+
+async function doLogout() {
+  await DB.logout();
+  CUR_USER = null; D = null;
+  toggleMenu(false);
+  document.getElementById('s-app').classList.remove('active');
+  document.getElementById('s-auth').classList.add('active');
+  document.getElementById('log-email').value='';
+  document.getElementById('log-pass').value='';
+  document.getElementById('auth-err').textContent='';
+  authMode('login');
+}
+
+async function launchApp(user) {
+  CUR_USER = user;
+  D = await DB.getUserData(user.email);
+  document.getElementById('s-auth').classList.remove('active');
+  document.getElementById('s-app').classList.add('active');
+  document.getElementById('hdr-sub').textContent = 'שלום, ' + user.name + '!';
+  document.getElementById('umenu-name').textContent  = user.name;
+  document.getElementById('umenu-email').textContent = user.email;
+  currentTab='matches'; currentSub='open'; currentGf='all';
+  initSections();
+}
+
+// ──────────────────────────────────────────────
+//  NAV
+// ──────────────────────────────────────────────
+var currentTab='matches', currentSub='open', currentGf='all', currentTestSub='open';
+var LEADERS_DATA = [];
+
+function switchTab(tab, idx) {
+  currentTab = tab;
+  document.querySelectorAll('.sec').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('sec-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(function(b,i) { b.classList.toggle('active',i===idx); });
+  document.querySelectorAll('.nb').forEach(function(b,i) { b.classList.toggle('active',i===idx); });
+  if (tab==='table') renderLeaderboard();
+}
+function setSub(sub, btn) {
+  currentSub=sub;
+  document.querySelectorAll('.st').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderMatches();
+}
+function setGf(gf, btn) {
+  currentGf=gf;
+  document.querySelectorAll('.fp').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderMatches();
+}
+
+// בונה את כפתורי הסינון דינמית מתוך MATCHES (ללא PL)
+function buildFilterButtons() {
+  var row = document.getElementById('gf-row');
+  if (!row) return;
+
+  // שלב 1: מצא את כל הבתים/שלבים הייחודיים (ללא בדיקת PL)
+  var seen = {};
+  var groups = [];
+  MATCHES.forEach(function(m) {
+    if (m.group === 'פרמייר ליג') return;
+    if (!seen[m.group]) {
+      seen[m.group] = true;
+      groups.push({ key: m.group, stage: m.stage });
+    }
+  });
+
+  // שלב 2: מיין — בתים לפי סדר (A-L), ואז נוקאאוט
+  var stageOrder = { GROUP: 0, R32: 1, R16: 2, QF: 3, SF: 4, THIRD: 5, FINAL: 6 };
+  groups.sort(function(a, b) {
+    var sa = stageOrder[a.stage] || 0;
+    var sb = stageOrder[b.stage] || 0;
+    if (sa !== sb) return sa - sb;
+    return a.key.localeCompare(b.key, 'he');
+  });
+
+  // תוויות קצרות לנוקאאוט
+  var koLabels = {
+    'Round of 32': '\uD83C\uDFC5 סיבוב 32',
+    'Round of 16': '\uD83C\uDFC5 שמינית',
+    'Quarter-final': '\uD83C\uDFC5 רבע',
+    'Quarter-finals': '\uD83C\uDFC5 רבע',
+    'Semi-final': '\uD83C\uDFC5 חצי',
+    'Semi-finals': '\uD83C\uDFC5 חצי',
+    'Third place': '\uD83E\uDD49 מקום 3',
+    'Final': '\uD83C\uDFC6 גמר',
+  };
+
+  // שלב 3: בנה HTML
+  var html = '<button class="fp' + (currentGf==='all'?' active':'') + '" onclick="setGf(\'all\',this)">\u26BD הכל</button>';
+  groups.forEach(function(g) {
+    var label = koLabels[g.key] || g.key;
+    var isActive = currentGf === g.key;
+    html += '<button class="fp' + (isActive?' active':'') + '" onclick="setGf(\'' + g.key + '\',this)">' + label + '</button>';
+  });
+
+  row.innerHTML = html;
+}
+
+// ──────────────────────────────────────────────
+//  NOTIFICATION
+// ──────────────────────────────────────────────
+var nt;
+function pop(msg, color) {
+  color = color || '#00e87a';
+  var n=document.getElementById('notif');
+  n.textContent=msg; n.style.background=color;
+  n.style.color=color==='#ffd04a'?'#1a0900':'#fff';
+  n.classList.add('show');
+  clearTimeout(nt); nt=setTimeout(function() { n.classList.remove('show'); },2500);
+}
+
+// ──────────────────────────────────────────────
+//  USER MENU
+// ──────────────────────────────────────────────
+function toggleMenu(force) {
+  var m=document.getElementById('umenu');
+  var open = force!==undefined ? force : !m.classList.contains('open');
+  m.classList.toggle('open', open);
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#umenu') && !e.target.closest('#avatar-btn'))
+    toggleMenu(false);
+});
+
+// ──────────────────────────────────────────────
+//  MATCHES
+// ──────────────────────────────────────────────
+function renderMatches() {
+  var list = document.getElementById('match-list');
+  var rows = MATCHES
+    .filter(function(m) { return m.group !== 'פרמייר ליג'; })
+    .filter(function(m) { return currentGf==='all' || m.group===currentGf; })
+    .filter(function(m) { return currentSub==='open' ? !m.result : !!m.result; });
+  if (!rows.length) { list.innerHTML='<div class="empty">אין משחקים להצגה</div>'; return; }
+  list.innerHTML = rows.map(mHTML).join('');
+}
+
+function renderTestMatches() {
+  var list = document.getElementById('match-list-test');
+  if (!list) return;
+  var rows = MATCHES
+    .filter(function(m) { return m.group === 'פרמייר ליג'; })
+    .filter(function(m) { return currentTestSub==='open' ? !m.result : !!m.result; });
+  if (!rows.length) { list.innerHTML='<div class="empty">אין משחקים להצגה</div>'; return; }
+  list.innerHTML = rows.map(mHTML).join('');
+}
+
+function setTestSub(sub, btn) {
+  currentTestSub = sub;
+  document.querySelectorAll('#sec-test .st').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderTestMatches();
+}
+
+var BASE_PTS   = { exact_90:100, result_90:50, exact_et:150, result_et:80, exact_pen:200, winner_pen:100 };
+var STAGE_MULT = { GROUP:1, R32:1.5, R16:2, QF:3, SF:4, THIRD:4, FINAL:5 };
+var TOURNAMENT_START_DATE = new Date('2026-06-11T00:00:00Z');
+
+function clientCalcPts(pred, m) {
+  if (!m.result || !pred) return null;
+  var mult  = STAGE_MULT[m.stage] || 1;
+  var early = pred.saved_at && new Date(pred.saved_at) < TOURNAMENT_START_DATE;
+  var bonus = early ? 1.5 : 1;
+  var raw = 0;
+  var ph=+pred.h, pa=+pred.a, rh=m.result.h, ra=m.result.a;
+  if (ph===rh && pa===ra)                            raw += BASE_PTS.exact_90;
+  else if (Math.sign(ph-pa)===Math.sign(rh-ra))     raw += BASE_PTS.result_90;
+  if (pred.et_h!==undefined && m.resultET) {
+    var peh=+pred.et_h, pea=+pred.et_a, reh=m.resultET.h, rea=m.resultET.a;
+    if (peh===reh && pea===rea)                      raw += BASE_PTS.exact_et;
+    else if (Math.sign(peh-pea)===Math.sign(reh-rea)) raw += BASE_PTS.result_et;
+  }
+  if (pred.pen_h!==undefined && m.resultPen) {
+    var pph=+pred.pen_h, ppa=+pred.pen_a, rph=m.resultPen.h, rpa=m.resultPen.a;
+    if (pph===rph && ppa===rpa)                      raw += BASE_PTS.exact_pen;
+    else if (Math.sign(pph-ppa)===Math.sign(rph-rpa)) raw += BASE_PTS.winner_pen;
+  }
+  return Math.round(raw * mult * bonus);
+}
+
+function mHTML(m) {
+  var pred   = D.predictions[m.id];
+  var done   = !!m.result;
+  var locked = isMatchLocked(m);
+  var lbl    = lockLabel(m);
+  var isKO   = m.hasET;
+
+  var pts = clientCalcPts(pred, m);
+
+  var badge = '';
+  if (done && pts !== null)
+    badge = '<div class="mbadge" style="background:' + (pts>=10?'#00e87a':pts>=5?'#f5a623':'#ff4d6a') + ';color:#000">' + (pts>0?'\u2713 '+pts+' נק\'':'\u2717 0') + '</div>';
+  else if (locked && !done)
+    badge = '<div class="mbadge" style="background:#2a2a3a;color:#778">' + (lbl||'🔒') + '</div>';
+
+  var countdown = (!locked && !done && lbl)
+    ? '<div style="position:absolute;top:6px;left:10px;font-size:10px;color:var(--orange)">' + lbl + '</div>' : '';
+
+  var resultBlock = '';
+  if (done) {
+    var scoreStr = '<div class="mresult">' + m.result.h + '–' + m.result.a + '</div>';
+    if (m.resultET)  scoreStr += '<div style="font-size:10px;color:var(--orange);margin-top:2px">הארכה: ' + m.resultET.h + '–' + m.resultET.a + '</div>';
+    if (m.resultPen) scoreStr += '<div style="font-size:10px;color:var(--cyan);margin-top:2px">פנדלים: ' + m.resultPen.h + '–' + m.resultPen.a + '</div>';
+    resultBlock = scoreStr;
+  }
+
+  var savedBlock = '';
+  if (!done && pred) {
+    var s = '<div class="minputs"><input class="si" disabled value="' + pred.h + '"><span class="msep">–</span><input class="si" disabled value="' + pred.a + '"></div>';
+    if (pred.et_h !== undefined) s += '<div style="font-size:10px;color:var(--orange);margin-top:3px">הארכה: ' + pred.et_h + '–' + pred.et_a + '</div>';
+    if (pred.pen_h !== undefined) s += '<div style="font-size:10px;color:var(--cyan);margin-top:2px">פנדלים: ' + pred.pen_h + '–' + pred.pen_a + '</div>';
+    if (locked) {
+      s += '<div class="msaved">\uD83D\uDD12 נעול</div>';
+    } else {
+      s += '<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px">' +
+        '<span class="msaved" style="margin-top:0">\u2713 שמור</span>' +
+        '<button onclick="editPred(' + m.id + ')" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;color:var(--muted);font-size:11px;padding:4px 12px;cursor:pointer;font-family:inherit">\u270F\uFE0F ערוך</button>' +
+      '</div>';
+    }
+    savedBlock = s;
+  }
+
+  var formBlock = '';
+  if (!done && !pred && !locked) {
+    formBlock = '<div style="font-size:10px;color:var(--muted);margin-bottom:4px">90 דקות</div>' +
+      '<div class="minputs">' +
+        '<input class="si" id="mh-' + m.id + '" type="number" min="0" max="20" oninput="chkM(' + m.id + ')">' +
+        '<span class="msep">–</span>' +
+        '<input class="si" id="ma-' + m.id + '" type="number" min="0" max="20" oninput="chkM(' + m.id + ')">' +
+      '</div>';
+
+    if (isKO) {
+      formBlock +=
+        '<div style="font-size:10px;color:var(--orange);margin:6px 0 3px">\uD83D\uDD50 הארכה <span style="color:var(--muted)">(+15/+8 נק\')</span></div>' +
+        '<div class="minputs">' +
+          '<input class="si" id="meh-' + m.id + '" type="number" min="0" max="20" style="border-color:#ff9d3a44">' +
+          '<span class="msep" style="color:#3a3020">–</span>' +
+          '<input class="si" id="mea-' + m.id + '" type="number" min="0" max="20" style="border-color:#ff9d3a44">' +
+        '</div>' +
+        '<div style="font-size:10px;color:var(--cyan);margin:6px 0 3px">\uD83E\uDD45 פנדלים <span style="color:var(--muted)">(+20/+10 נק\')</span></div>' +
+        '<div class="minputs">' +
+          '<input class="si" id="mph-' + m.id + '" type="number" min="0" max="20" style="border-color:#3de8e044">' +
+          '<span class="msep" style="color:#102a2a">–</span>' +
+          '<input class="si" id="mpa-' + m.id + '" type="number" min="0" max="20" style="border-color:#3de8e044">' +
+        '</div>';
+    }
+
+    formBlock += '<div id="mb-' + m.id + '" style="display:none;margin-top:8px">' +
+        '<button class="savebtn" onclick="savePred(' + m.id + ')">שמור ניחוש</button>' +
+      '</div>';
+  }
+
+  var noGuess = '';
+  if (!done && !pred && locked)
+    noGuess = '<div style="font-size:22px;color:#2a3a55">–  –</div><div style="font-size:10px;color:var(--muted);margin-top:4px">לא ניחשת</div>';
+
+  var center = done ? resultBlock : pred ? savedBlock : locked ? noGuess : formBlock;
+
+  var stageMult = STAGE_MULT[m.stage] || 1;
+  var stageColor = m.stage==='R16'?'#1a2a44':m.stage==='QF'?'#1a2a1a':m.stage==='SF'?'#2a1a2a':m.stage==='FINAL'?'#2a1a00':'#1a1a2a';
+  var stageTextColor = m.stage==='R16'?'#4d8fff':m.stage==='QF'?'#00e87a':m.stage==='SF'?'#ff5c8a':m.stage==='FINAL'?'#ffd04a':'#667';
+  var earlyBadge = (!done && pred && pred.saved_at && new Date(pred.saved_at) < TOURNAMENT_START_DATE) ? '<span style="font-size:10px;color:#ffd04a">\u26A1 ניחוש מוקדם \u00D71.5</span>' : '';
+
+  // \u05DB\u05E4\u05EA\u05D5\u05E8 \u05E6\u05E4\u05D9\u05D9\u05D4 \u05D1\u05E0\u05D9\u05D7\u05D5\u05E9\u05D9 \u05E9\u05D7\u05E7\u05E0\u05D9\u05DD \u05D0\u05D7\u05E8\u05D9\u05DD (\u05E8\u05E7 \u05D0\u05D7\u05E8\u05D9 \u05E0\u05E2\u05D9\u05DC\u05D4)
+  var peekBtn = '';
+  if (locked || done) {
+    var predsCount = LEADERS_DATA.filter(function(u) {
+      return u.predictions && u.predictions[m.id];
+    }).length;
+    if (predsCount > 0)
+      peekBtn = '<div style="text-align:center;margin-top:8px">' +
+        '<button onclick="showOthersPreds(' + m.id + ')" style="background:#1a1a3a;border:1.5px solid #3a3a6a;border-radius:9px;color:#8899cc;font-size:11px;padding:4px 14px;cursor:pointer;font-family:inherit">' +
+          '\uD83D\uDC41 ' + predsCount + ' \u05E0\u05D9\u05D7\u05D5\u05E9\u05D9\u05DD' +
+        '</button></div>';
+  }
+
+  return '<div class="mc' + (done?' done':'') + '">' +
+    badge + countdown +
+    '<div class="mmeta" style="margin-top:' + ((!locked&&!done&&lbl)?'14px':'0') + '">' +
+      m.date + ' \u00B7 ' + m.time + ' \u00B7 ' + m.group +
+      ' <span style="margin-right:6px;background:' + stageColor + ';color:' + stageTextColor + ';border-radius:8px;padding:1px 7px;font-size:10px;font-weight:700">' +
+        '\u00D7' + stageMult +
+      '</span> ' + earlyBadge +
+    '</div>' +
+    '<div class="mrow">' +
+      '<div class="mteam"><span class="mflag">' + m.hf + '</span><span class="mname">' + m.home + '</span></div>' +
+      '<div class="mcenter">' + center + '</div>' +
+      '<div class="mteam aw"><span class="mflag">' + m.af + '</span><span class="mname">' + m.away + '</span></div>' +
+    '</div>' +
+    peekBtn +
+  '</div>';
+}
+
+function showOthersPreds(matchId) {
+  var match = MATCHES.find(function(m) { return m.id === matchId; });
+  var rows = LEADERS_DATA
+    .filter(function(u) { return u.predictions && u.predictions[matchId]; })
+    .sort(function(a, b) { return b.score - a.score; });
+
+  document.getElementById('preds-modal-title').textContent =
+    match ? (match.home + ' נגד ' + match.away) : '';
+
+  document.getElementById('preds-modal-list').innerHTML = rows.length
+    ? rows.map(function(u) {
+        var p = u.predictions[matchId];
+        var pts = match ? clientCalcPts(p, match) : null;
+        var isSelf = CUR_USER && u.id === CUR_USER.id;
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #2a2a4a;direction:rtl">' +
+          '<span style="font-size:13px' + (isSelf?';color:var(--accent);font-weight:700':'') + '">👤 ' + (u.name || 'אנונימי') + (isSelf?' (אני)':'') + '</span>' +
+          '<span style="font-size:15px;font-weight:900;margin:0 12px">' + p.h + '–' + p.a + '</span>' +
+          (pts !== null
+            ? '<span style="font-size:11px;color:' + (pts > 0 ? '#00e87a' : '#ff4d6a') + ';min-width:40px;text-align:left">' + (pts > 0 ? '+' + pts : '0') + ' נק\'</span>'
+            : '<span style="min-width:40px"></span>') +
+        '</div>';
+      }).join('')
+    : '<div style="color:#667;text-align:center;padding:20px">אין ניחושים עדיין</div>';
+
+  document.getElementById('preds-modal').style.display = 'block';
+}
+
+function closePredModal(e) {
+  if (e.target === document.getElementById('preds-modal'))
+    document.getElementById('preds-modal').style.display = 'none';
+}
+
+function chkM(id) {
+  var h = document.getElementById('mh-'+id);
+  var a = document.getElementById('ma-'+id);
+  var b = document.getElementById('mb-'+id);
+  if (b) b.style.display = (h && h.value!=='' && a && a.value!=='') ? 'block' : 'none';
+}
+
+async function savePred(id) {
+  var m = MATCHES.find(function(m) { return m.id===id; });
+  if (m && isMatchLocked(m)) { pop('🔒 הניחוש נסגר','#ff4d6a'); renderMatches(); renderTestMatches(); return; }
+  var hEl = document.getElementById('mh-'+id);
+  var aEl = document.getElementById('ma-'+id);
+  var h = hEl ? hEl.value : '';
+  var a = aEl ? aEl.value : '';
+  if (h===''||a==='') return;
+
+  var pred = { h:+h, a:+a, saved_at: new Date().toISOString() };
+
+  var ethEl = document.getElementById('meh-'+id);
+  var etaEl = document.getElementById('mea-'+id);
+  if (ethEl && ethEl.value!=='' && etaEl && etaEl.value!=='') { pred.et_h=+ethEl.value; pred.et_a=+etaEl.value; }
+
+  var pphEl = document.getElementById('mph-'+id);
+  var ppaEl = document.getElementById('mpa-'+id);
+  if (pphEl && pphEl.value!=='' && ppaEl && ppaEl.value!=='') { pred.pen_h=+pphEl.value; pred.pen_a=+ppaEl.value; }
+
+  D.predictions[id] = pred;
+  await syncD();
+
+  var msg = '\u2713 שמור: ' + h + '–' + a;
+  if (pred.et_h!==undefined) msg += ' \u00B7 הארכה ' + pred.et_h + '–' + pred.et_a;
+  if (pred.pen_h!==undefined) msg += ' \u00B7 פנד\' ' + pred.pen_h + '–' + pred.pen_a;
+  pop(msg);
+  renderMatches();
+  renderTestMatches();
+  updateHeader();
+}
+
+function editPred(id) {
+  var m = MATCHES.find(function(m) { return m.id===id; });
+  if (m && isMatchLocked(m)) { pop('\uD83D\uDD12 הניחוש נסגר','#ff4d6a'); return; }
+  delete D.predictions[id];
+  renderTestMatches();
+  renderMatches();
+}
+
+// ──────────────────────────────────────────────
+//  QUESTIONS
+// ──────────────────────────────────────────────
+function renderQuestions() {
+  document.getElementById('q-list').innerHTML = QUESTIONS.map(qHTML).join('');
+  syncQChips();
+}
+
+function qHTML(q) {
+  var ans=D.answers[q.id], done=!!ans;
+  var opts = q.options.map(function(o) {
+    var cls='qo';
+    if (done) {
+      if(o===q.correct) cls+=' ok';
+      else if(ans.sel===o) cls+=' bad';
+      else cls+=' dis';
+    }
+    return '<button class="' + cls + '" onclick="selQ(\'' + q.id + '\',\'' + o + '\')">' + o + '</button>';
+  }).join('');
+  var sub = !done ? '<button class="qsub" id="qsub-' + q.id + '" style="display:none" onclick="submitQ(\'' + q.id + '\')">שלח תשובה</button>' : '';
+  var res = done ? '<div class="qres" style="color:' + (ans.correct?'var(--green)':'var(--red)') + '">' +
+    (ans.correct?'\u2713 נכון! +' + q.pts + ' נקודות':'\u2717 לא נכון \u00B7 תשובה: ' + q.correct) + '</div>' : '';
+  return '<div class="card" id="qcard-' + q.id + '">' +
+    '<div class="qtag" style="background:' + q.bg + '">' + q.matchLabel + '</div>' +
+    '<div class="qhdr"><div class="qtext">' + q.text + '</div><span class="qpts">' + q.pts + ' נק\'</span></div>' +
+    '<div class="qopts" id="qopts-' + q.id + '">' + opts + '</div>' +
+    sub + res +
+  '</div>';
+}
+
+function selQ(qid, opt) {
+  if (D.answers[qid]) return;
+  document.querySelectorAll('#qopts-' + qid + ' .qo').forEach(function(b) {
+    b.classList.remove('sel');
+    if(b.textContent===opt) b.classList.add('sel');
+  });
+  var s=document.getElementById('qsub-'+qid);
+  if(s){s.style.display='block';s.dataset.sel=opt;}
+}
+
+async function submitQ(qid) {
+  var s=document.getElementById('qsub-'+qid);
+  var sel=s?s.dataset.sel:null; if(!sel) return;
+  var q=QUESTIONS.find(function(q) { return q.id===qid; });
+  var correct=sel===q.correct;
+  D.answers[qid]={sel:sel,correct:correct};
+  if(correct) D.score=(D.score||0)+q.pts;
+  await syncD();
+  if(correct){pop('\u2713 נכון! +' + q.pts + ' נקודות','#4d8fff');}
+  else pop('\u2717 לא נכון','#ff4d6a');
+  var old=document.getElementById('qcard-'+qid);
+  old.outerHTML=qHTML(q);
+  syncQChips(); updateHeader();
+}
+
+function syncQChips() {
+  var vals=Object.values(D.answers||{});
+  var ok=vals.filter(function(a) { return a.correct; }).length;
+  document.getElementById('qc-ok').textContent=ok;
+  document.getElementById('qc-bad').textContent=vals.length-ok;
+  document.getElementById('qc-left').textContent=QUESTIONS.length-vals.length;
+}
+
+// ──────────────────────────────────────────────
+//  CHAMPION BET
+// ──────────────────────────────────────────────
+function renderTeamGrid() {
+  var searchEl = document.getElementById('team-search');
+  var s = searchEl ? searchEl.value : '';
+  var g=document.getElementById('team-grid'); if(!g) return;
+  g.innerHTML=TEAMS.filter(function(t) { return t.name.includes(s)||!s; }).map(function(t) {
+    var sel=D.champSel===t.id;
+    return '<button class="tbtn' + (sel?' sel':'') + '" onclick="selTeam(\'' + t.id + '\')">' +
+      '<span style="font-size:22px">' + t.flag + '</span><span>' + t.name + '</span></button>';
+  }).join('');
+}
+
+function selTeam(id) {
+  D.champSel=id;
+  renderTeamGrid();
+  var btn=document.getElementById('champ-save-btn');
+  btn.style.display='block';
+  var team = T(id);
+  if(D.champBet && id===D.champBet.teamId) btn.textContent='\u2713 נשמר כבר';
+  else if(D.champBet) btn.textContent='\uD83D\uDD04 שנה ל-' + (team?team.name:'') + ' \u00B7 ' + CHAMP_PTS[CURRENT_STAGE] + ' נק\'';
+  else btn.textContent='\u2713 שמור הימור אלוף';
+}
+
+async function saveChampion() {
+  var tid=D.champSel; if(!tid) return;
+  if(D.champBet) D.champHistory.push({teamId:D.champBet.teamId, stage:D.champBet.stage});
+  D.champBet={teamId:tid,stage:CURRENT_STAGE};
+  await syncD();
+  var t=T(tid);
+  pop('\uD83C\uDFC6 ' + t.flag + ' ' + t.name + ' \u00B7 ' + CHAMP_PTS[CURRENT_STAGE] + ' נק\'','#ffd04a');
+  renderChampSection();
+}
+
+function renderChampSection() {
+  var cur=document.getElementById('champ-cur');
+  if(D.champBet){
+    var t=T(D.champBet.teamId);
+    cur.style.display='flex';
+    cur.innerHTML='<span style="font-size:28px">' + t.flag + '</span>' +
+      '<div><div style="font-weight:800;color:var(--gold);font-size:14px">' + t.name + '</div>' +
+      '<div style="font-size:11px;color:#776">' + CHAMP_LABEL[D.champBet.stage] + '</div></div>' +
+      '<span class="badge" style="margin-right:auto;color:var(--gold);border-color:#ffd04a44;background:#ffd04a11">' + CHAMP_PTS[D.champBet.stage] + ' נק\'</span>';
+  } else { cur.style.display='none'; }
+
+  var hist=document.getElementById('champ-hist');
+  hist.innerHTML = D.champHistory.length
+    ? '<div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px">\uD83D\uDCCB היסטוריית שינויים</div>'
+      + D.champHistory.map(function(h) {
+          var t=T(h.teamId);
+          return '<div class="hist-entry">' +
+            '<span style="font-size:18px">' + t.flag + '</span>' +
+            '<div style="flex:1"><div style="font-size:13px;color:#aaa">' + t.name + '</div>' +
+            '<div style="font-size:10px;color:var(--muted)">' + CHAMP_LABEL[h.stage] + '</div></div>' +
+            '<span style="color:#665;font-size:12px;font-weight:700">' + CHAMP_PTS[h.stage] + ' נק\'</span>' +
+          '</div>';
+        }).join('')
+    : '';
+
+  document.getElementById('sr-table').innerHTML=Object.entries(CHAMP_PTS).map(function(entry) {
+    var s = entry[0], p = entry[1];
+    return '<div class="sr' + (s===CURRENT_STAGE?' cur':'') + '">' +
+      '<span>' + (s===CURRENT_STAGE?'\u25B6 ':'') + CHAMP_LABEL[s] + '</span>' +
+      '<span style="font-weight:700">' + p + ' נק\'</span>' +
+    '</div>';
+  }).join('');
+  renderTeamGrid();
+}
+
+// ──────────────────────────────────────────────
+//  SCORER / ASSIST — FIXED: replaced smart quotes with regular quotes
+// ──────────────────────────────────────────────
+function canEditPlayerBet() {
+  return new Date() < TOURNAMENT_START_DATE;
+}
+
+function getPlayerName(bet) {
+  if (!bet) return '';
+  if (bet.custom) return bet.custom;
+  var p = P(bet.pid);
+  return p ? p.name : bet.pid;
+}
+function getPlayerFlag(bet) {
+  if (!bet || bet.custom) return '\u26BD';
+  var p = P(bet.pid);
+  return p ? p.flag : '\u26BD';
+}
+
+function renderPlayerGrid(gridId, selKey, color) {
+  var g = document.getElementById(gridId); if (!g) return;
+  var locked = D[selKey+'Bet'] && !canEditPlayerBet();
+  if (locked) { g.style.display='none'; return; }
+  g.style.display = 'grid';
+  var allPlayers = PLAYERS.concat([{id:'other', name:'אחר (הקלד ידנית)', flag:'\u270F\uFE0F'}]);
+  g.innerHTML = allPlayers.map(function(p) {
+    var sel = D[selKey+'Sel'] === p.id;
+    return '<button class="pbtn" style="' + (sel ? 'border-color:'+color+';background:'+color+'22;color:'+color : '') + '"' +
+      ' onclick="selPlayer(\'' + selKey + '\',\'' + p.id + '\',\'' + color + '\')">' +
+      '<span>' + p.flag + '</span><span>' + p.name + '</span></button>';
+  }).join('');
+}
+
+function selPlayer(key, pid, color) {
+  D[key+'Sel'] = pid;
+  renderPlayerGrid(key+'-grid', key, color);
+  var customRow = document.getElementById(key+'-custom-row');
+  if (customRow) customRow.style.display = pid === 'other' ? 'flex' : 'none';
+  document.getElementById(key+'-count-row').style.display = 'flex';
+  checkCountBtn(key);
+}
+
+function checkScorerBtn(){ checkCountBtn('scorer'); }
+function checkAssistBtn(){ checkCountBtn('assist'); }
+
+function checkCountBtn(key) {
+  var countEl = document.getElementById(key+'-count');
+  var v = countEl ? countEl.value : '';
+  var sel = D[key+'Sel'];
+  var customEl = document.getElementById(key+'-custom');
+  var custom = customEl ? customEl.value.trim() : '';
+  var valid = sel && v && (sel !== 'other' || custom);
+  document.getElementById(key+'-save-btn').style.display = valid ? 'block' : 'none';
+}
+
+async function savePlayerBet(key, label, color, emoji) {
+  var pid    = D[key+'Sel'];
+  var countEl = document.getElementById(key+'-count');
+  var count  = countEl ? +countEl.value : 0;
+  var customEl = document.getElementById(key+'-custom');
+  var custom = customEl ? customEl.value.trim() : '';
+  if (!pid || !count) return;
+  if (pid === 'other' && !custom) { pop('אנא הקלד שם שחקן','#ff4d6a'); return; }
+  D[key+'Bet'] = pid === 'other' ? { pid:'other', custom: custom, count: count } : { pid: pid, count: count };
+  await syncD();
+  var p = P(pid);
+  var name = pid === 'other' ? custom : (p ? p.name : '');
+  var flag = pid === 'other' ? '\u270F\uFE0F' : (p ? p.flag : '');
+  pop(emoji + ' ' + flag + ' ' + name + ' \u00B7 ' + count + ' ' + label, color);
+  var colorVar = 'var(--' + (key==='scorer'?'pink':'cyan') + ')';
+  showSaved(key, label, colorVar, color);
+}
+
+async function saveScorer() { await savePlayerBet('scorer','שערים','#ff5c8a','\u26BD'); }
+async function saveAssist() { await savePlayerBet('assist','בישולים','#3de8e0','\uD83C\uDD70\uFE0F'); }
+
+function editPlayerBet(key) {
+  if (!canEditPlayerBet()) { pop('הטורניר כבר התחיל — לא ניתן לשנות','#ff4d6a'); return; }
+  D[key+'Bet'] = null;
+  D[key+'Sel'] = null;
+  document.getElementById(key+'-saved').style.display = 'none';
+  renderPlayerGrid(key+'-grid', key, key==='scorer'?'#ff5c8a':'#3de8e0');
+  document.getElementById(key+'-count-row').style.display = 'none';
+  document.getElementById(key+'-save-btn').style.display = 'none';
+}
+
+function showSaved(key, label, colorVar, colorHex) {
+  var bet = D[key+'Bet']; if (!bet) return;
+  var name = getPlayerName(bet);
+  var flag = getPlayerFlag(bet);
+  var canEdit = canEditPlayerBet();
+  document.getElementById(key+'-grid').style.display = 'none';
+  var customRow = document.getElementById(key+'-custom-row');
+  if (customRow) customRow.style.display = 'none';
+  document.getElementById(key+'-count-row').style.display = 'none';
+  document.getElementById(key+'-save-btn').style.display = 'none';
+  var div = document.getElementById(key+'-saved');
+  div.style.display = 'block';
+  div.innerHTML =
+    '<div style="background:' + colorHex + '11;border-radius:10px;padding:10px 13px;border:1px solid ' + colorHex + '33">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<span style="font-size:22px">' + flag + '</span>' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:700;color:' + colorVar + ';font-size:13px">' + name + '</div>' +
+          '<div style="font-size:11px;color:var(--muted)">' + bet.count + ' ' + label + '</div>' +
+        '</div>' +
+        (canEdit ? '<button onclick="editPlayerBet(\'' + key + '\')" style="background:#1a2535;border:1px solid #2a3a55;border-radius:8px;color:#aaa;font-size:11px;padding:4px 10px;cursor:pointer;font-family:inherit">\u270F\uFE0F ערוך</button>' : '<span style="font-size:10px;color:var(--muted)">נעול</span>') +
+      '</div>' +
+      (canEdit ? '' : '<div style="font-size:10px;color:var(--muted);margin-top:6px">הטורניר התחיל — לא ניתן לשנות</div>') +
+    '</div>';
+}
+
+// ──────────────────────────────────────────────
+//  LEADERBOARD
+// ──────────────────────────────────────────────
+function shareLeaderboardWA() {
+  var rows = document.querySelectorAll('.lbrow');
+  var medals = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+  var today = new Date().toLocaleDateString('he-IL', {day:'numeric',month:'long'});
+  var msg = '*\uD83C\uDFC6 מונדיאל 2026 - טבלת דירוג ' + today + '*\n';
+  msg += '────────────────\n';
+  rows.forEach(function(row, i) {
+    var nameEl  = row.querySelector('[data-name]');
+    var scoreEl = row.querySelector('[data-score]');
+    var name  = nameEl  ? nameEl.dataset.name   : '';
+    var score = scoreEl ? scoreEl.dataset.score  : '';
+    var medal = i < 3 ? medals[i] : (i+1) + '.';
+    msg += medal + ' ' + name + ' — *' + score + ' נק\'*\n';
+  });
+  msg += '────────────────\n';
+  msg += '\u26BD ניחש גם אתה: http://localhost:8000';
+  var url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+async function renderLeaderboard() {
+  var rows = await DB.getLeaderboard();
+  var sorted = rows.sort(function(a,b) { return b.score-a.score; });
+  var medals=['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+  var myRank = sorted.findIndex(function(r) { return r.email===CUR_USER.email; })+1;
+  document.getElementById('hdr-rank').textContent='#'+(myRank||'\u2013');
+
+  document.getElementById('lb-list').innerHTML=sorted.map(function(u,i) {
+    var t = u.champion ? T(u.champion) : null;
+    var isMe = u.email===CUR_USER.email;
+    return '<div class="lbrow' + (isMe?' me':'') + '">' +
+      '<div class="lb-medal" style="font-size:' + (i<3?20:12) + 'px;font-weight:700;color:var(--muted);width:26px;text-align:center">' + (i<3?medals[i]:'#'+(i+1)) + '</div>' +
+      '<div style="font-size:22px">' + (u.av||'\uD83D\uDC64') + '</div>' +
+      '<div style="flex:1">' +
+        '<div style="font-weight:700;font-size:13px;color:' + (isMe?'var(--blue)':'#ccc') + '" data-name="' + u.name + '">' + u.name + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-top:2px">\u26BD ' + u.bets + ' \u00B7 \u2753 ' + u.qa + (t?' \u00B7 \uD83C\uDFC6 '+t.flag:'') + '</div>' +
+      '</div>' +
+      '<div style="text-align:center" data-score="' + u.score + '">' +
+        '<div style="font-size:19px;font-weight:900;color:' + (i===0?'var(--gold)':i===1?'#c0c0c0':i===2?'#cd7f32':'#667') + '">' + u.score + '</div>' +
+        '<div style="font-size:9px;color:var(--muted)">נק\'</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  var skItems = [
+    ["90 דק - מדויק","100 x שלב","#00e87a"],
+    ["90 דק - כיוון","50 x שלב","#f5a623"],
+    ["הארכה מדויק","150 x שלב","#ff9d3a"],
+    ["הארכה כיוון","80 x שלב","#ff9d3a"],
+    ["פנדלים מדויק","200 x שלב","#3de8e0"],
+    ["פנדלים מנצח","100 x שלב","#3de8e0"],
+    ["ניחוש מוקדם","x1.5","#ffd04a"],
+    ["שאלה יומית","30-50 נק","#4d8fff"],
+    ["אלוף מונדיאל","500-750 נק","#ffd04a"],
+    ["מלך שערים","50+30 נק","#ff5c8a"],
+    ["מלך בישולים","50+30 נק","#3de8e0"],
+  ];
+  document.getElementById('sk-grid').innerHTML = skItems.map(function(item) {
+    return '<div class="ski"><span style="font-size:10px;color:var(--muted)">' + item[0] + '</span><span style="font-size:11px;font-weight:800;color:' + item[2] + '">' + item[1] + '</span></div>';
+  }).join('');
+}
+
+// ──────────────────────────────────────────────
+//  INVITE
+// ──────────────────────────────────────────────
+async function sendInvite() {
+  var inp=document.getElementById('inv-email');
+  var email=inp.value.trim();
+  var msg=document.getElementById('inv-msg');
+  if(!email.includes('@')){msg.style.color='var(--orange)';msg.textContent='\u26A0\uFE0F מייל לא תקין';return;}
+  if(D.invites.includes(email)){msg.style.color='var(--orange)';msg.textContent='כבר הוזמן';return;}
+  D.invites.push(email); await syncD();
+  inp.value='';
+  msg.style.color='var(--green)'; msg.textContent='\u2713 הזמנה נשלחה!';
+  setTimeout(function() { msg.textContent=''; },2000);
+  renderInviteList();
+}
+function renderInviteList() {
+  document.getElementById('inv-list').innerHTML=(D.invites||[]).map(function(e) {
+    return '<div class="inv-email">\uD83D\uDCE7 ' + e + '</div>';
+  }).join('');
+}
+
+// ──────────────────────────────────────────────
+//  HEADER
+// ──────────────────────────────────────────────
+function updateHeader() {
+  document.getElementById('hdr-score').textContent=D.score||0;
+}
+
+// ──────────────────────────────────────────────
+//  INIT ALL SECTIONS
+// ──────────────────────────────────────────────
+async function initSections() {
+  updateHeader();
+
+  document.getElementById('match-list').innerHTML = '<div class="empty">\u23F3 טוען משחקים...</div>';
+  document.getElementById('q-list').innerHTML     = '<div class="empty">\u23F3 טוען שאלות...</div>';
+
+  await Promise.all([loadMatchesFromDB(), loadQuestionsFromDB()]);
+
+  // הצג טאב בדיקה רק לפני תחילת המונדיאל וכשיש משחקי PL
+  var hasPL = MATCHES.some(function(m) { return m.group === 'פרמייר ליג'; });
+  var beforeWC = new Date() < TOURNAMENT_START_DATE;
+  var showTest = hasPL && beforeWC;
+  document.getElementById('tab-test-top').style.display = showTest ? '' : 'none';
+  document.getElementById('tab-test-bot').style.display = showTest ? '' : 'none';
+  if (showTest) renderTestMatches();
+
+  // טעינת נתוני שחקנים לצפייה בניחושים
+  DB.getLeaderboard().then(function(data) { LEADERS_DATA = data; });
+
+  buildFilterButtons();
+  renderMatches();
+  renderQuestions();
+  renderChampSection();
+  renderPlayerGrid('scorer-grid','scorer','#ff5c8a');
+  renderPlayerGrid('assist-grid','assist','#3de8e0');
+  if(D.scorerBet) showSaved('scorer','שערים','var(--pink)','#ff5c8a');
+  if(D.assistBet) showSaved('assist','בישולים','var(--cyan)','#3de8e0');
+  renderInviteList();
+
+  setInterval(async function() {
+    await Promise.all([loadMatchesFromDB(), loadQuestionsFromDB()]);
+    buildFilterButtons();
+    renderMatches();
+    if (showTest) renderTestMatches();
+    renderQuestions();
+    // רענן נתוני שחקנים לצפייה בניחושים
+    DB.getLeaderboard().then(function(data) { LEADERS_DATA = data; });
+  }, 5 * 60 * 1000);
+}
+
+// ──────────────────────────────────────────────
+//  AUTO LOGIN on page load
+// ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('tab-login').addEventListener('click', function() { authMode('login'); });
+  document.getElementById('tab-reg').addEventListener('click', function() { authMode('register'); });
+  document.getElementById('btn-register').addEventListener('click', doRegister);
+  document.getElementById('reg-pass2').addEventListener('keydown', function(e) { if(e.key==='Enter') doRegister(); });
+  document.getElementById('btn-login').addEventListener('click', doLogin);
+  document.getElementById('log-pass').addEventListener('keydown', function(e) { if(e.key==='Enter') doLogin(); });
+});
+
+(async function() {
+  try {
+    var sess = await Promise.race([
+      DB.getSession(),
+      new Promise(function(_,rej) { setTimeout(function() { rej(new Error('timeout')); }, 5000); })
+    ]);
+    if (sess && sess.email && sess.name) {
+      await launchApp(sess);
+    }
+  } catch(e) {
+    console.log('Session check:', e.message);
+  }
+})();
+</script>
+</body>
+</html>
