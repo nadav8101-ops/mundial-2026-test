@@ -242,6 +242,103 @@ async function fetchPLMatches() {
   return data.matches || [];
 }
 
+async function fetchCLMatches() {
+  console.log('🏆 שולף תוצאות ליגת האלופות מ-football-data.org...');
+  var url = FD_BASE + '/competitions/CL/matches?status=FINISHED&limit=30';
+  var res = await fetch(url, { headers: { 'X-Auth-Token': FOOTBALL_API_KEY } });
+  if (!res.ok) {
+    var text = await res.text();
+    console.warn('   ⚠️  לא הצליח לשלוף CL: ' + res.status + ' — ' + text);
+    return [];
+  }
+  var data = await res.json();
+  return data.matches || [];
+}
+
+// ── שאלות סטטיסטיקה ──────────────────────────────────────────────
+var STAT_TEMPLATES = [
+  { stat: 'corners_total',         text: 'כמה קרנות יהיו בסך הכל?',                   tolerance: 1, pts: 25 },
+  { stat: 'corners_home',          text: 'כמה קרנות תזכה {home}?',                     tolerance: 1, pts: 25 },
+  { stat: 'corners_away',          text: 'כמה קרנות תזכה {away}?',                     tolerance: 1, pts: 25 },
+  { stat: 'yellow_cards_total',    text: 'כמה כרטיסים צהובים יחולקו?',                tolerance: 1, pts: 30 },
+  { stat: 'shots_on_target_total', text: 'כמה בעיטות על המסגרת יהיו (שתי הקבוצות)?', tolerance: 2, pts: 40 },
+  { stat: 'fouls_total',           text: 'כמה חבלות יהיו בסך הכל?',                   tolerance: 2, pts: 35 },
+  { stat: 'offsides_total',        text: 'כמה נסיעות עפים יהיו?',                      tolerance: 1, pts: 30 },
+];
+
+async function fetchMatchStats(apiMatchId) {
+  var url = FD_BASE + '/matches/' + apiMatchId;
+  var res = await fetch(url, { headers: { 'X-Auth-Token': FOOTBALL_API_KEY } });
+  if (!res.ok) {
+    console.warn('   ⚠️  לא הצליח לשלוף stats ל-' + apiMatchId + ': ' + res.status);
+    return null;
+  }
+  return await res.json();
+}
+
+function extractStats(data) {
+  var stats = {};
+  if (data.statistics) {
+    data.statistics.forEach(function(s) {
+      if (s.type === 'CORNER_KICKS')          { stats.corners_home = s.home; stats.corners_away = s.away; stats.corners_total = s.home + s.away; }
+      if (s.type === 'SHOTS_ON_GOAL')         { stats.shots_on_target_total = s.home + s.away; }
+      if (s.type === 'TOTAL_FOUL_COMMITTED')  { stats.fouls_total = s.home + s.away; }
+      if (s.type === 'OFFSIDES')              { stats.offsides_total = (s.home || 0) + (s.away || 0); }
+    });
+  }
+  if (data.bookings) {
+    stats.yellow_cards_total = data.bookings.filter(function(b) { return b.card === 'YELLOW_CARD'; }).length;
+  }
+  return stats;
+}
+
+async function createPlaceholderQuestions(match) {
+  var existCheck = await sbGet('questions', 'match_id=eq.' + match.id + '&type=eq.numeric');
+  if (existCheck.length > 0) return;
+
+  var date = match.match_date.split('T')[0];
+  var pool = STAT_TEMPLATES.slice();
+  pool.sort(function() { return Math.random() - 0.5; });
+  var chosen = pool.slice(0, 3);
+
+  for (var i = 0; i < chosen.length; i++) {
+    var tmpl = chosen[i];
+    var text = tmpl.text
+      .replace('{home}', match.home_team)
+      .replace('{away}', match.away_team);
+    var row = {
+      text:          text,
+      options:       JSON.stringify([]),
+      correct:       null,
+      points:        tmpl.pts,
+      question_date: date,
+      active:        true,
+      match_id:      match.id,
+      type:          'numeric',
+      tolerance:     tmpl.tolerance,
+      stat_key:      tmpl.stat,
+    };
+    await sbUpsert('questions', row);
+    console.log('   ❓ ' + text + ' [' + tmpl.stat + ']');
+  }
+}
+
+async function updateQuestionsCorrectAnswer(matchId, stats) {
+  var questions = await sbGet('questions', 'match_id=eq.' + matchId + '&type=eq.numeric&correct=is.null');
+  if (questions.length === 0) return;
+
+  for (var i = 0; i < questions.length; i++) {
+    var q = questions[i];
+    var val = stats[q.stat_key];
+    if (val === undefined || val === null) {
+      console.log('   ⏭️  אין נתון עבור ' + q.stat_key);
+      continue;
+    }
+    await sbPatch('questions', 'id=eq.' + q.id, { correct: String(val) });
+    console.log('   ✅ שאלה ' + q.id + ' (' + q.stat_key + ') → ' + val);
+  }
+}
+
 // ── חישוב ניקוד (זהה ל-clientCalcPts באתר) ──────────────────────
 var BASE_PTS   = { exact_90:100, result_90:50, exact_et:150, result_et:80, exact_pen:200, winner_pen:100 };
 var STAGE_MULT = { GROUP_STAGE:1, LAST_32:1.5, LAST_16:2, QUARTER_FINALS:3, SEMI_FINALS:4, THIRD_PLACE:4, FINAL:5 };
@@ -290,11 +387,11 @@ async function main() {
   }
 
   // ──────────────────────────────────────────────────
-  // שלב 1: שלוף תוצאות מ-API (WC + PL)
+  // שלב 1: שלוף תוצאות מ-API (WC + PL + CL)
   // ──────────────────────────────────────────────────
-  var results = await Promise.all([fetchMatches(), fetchPLMatches()]);
-  var apiMatches = results[0].concat(results[1]);
-  console.log('📦 נמצאו ' + apiMatches.length + ' משחקים שהסתיימו (WC + PL)');
+  var results = await Promise.all([fetchMatches(), fetchPLMatches(), fetchCLMatches()]);
+  var apiMatches = results[0].concat(results[1]).concat(results[2]);
+  console.log('📦 נמצאו ' + apiMatches.length + ' משחקים שהסתיימו (WC + PL + CL)');
 
   if (apiMatches.length === 0) {
     console.log('ℹ️  אין משחקים שהסתיימו עדיין — יוצא.');
@@ -381,10 +478,49 @@ async function main() {
   console.log('\n📝 עודכנו ' + updated + ' תוצאות חדשות');
 
   // ──────────────────────────────────────────────────
-  // שלב 4: חשב מחדש ניקוד לכל המשתמשים
+  // שלב 4א: צור שאלות placeholder לכל משחק עתידי קרוב
+  // ──────────────────────────────────────────────────
+  console.log('\n❓ בודק שאלות לפני משחקים קרובים...');
+  var dbMatchesAll = await sbGet('matches', 'select=*&order=match_date.asc');
+  var now = new Date();
+  var twoDaysMs = 2 * 24 * 60 * 60 * 1000;
+  var upcoming = dbMatchesAll.filter(function(m) {
+    if (m.home_score !== null) return false;
+    var d = new Date(m.match_date);
+    return d > now && (d - now) < twoDaysMs;
+  });
+  for (var qi = 0; qi < upcoming.length; qi++) {
+    await createPlaceholderQuestions(upcoming[qi]);
+  }
+  if (upcoming.length === 0) console.log('   (אין משחקים קרובים ב-48 שעות הקרובות)');
+
+  // ──────────────────────────────────────────────────
+  // שלב 4ב: עדכן תשובות נכונות לשאלות של משחקים שהסתיימו
+  // ──────────────────────────────────────────────────
+  if (updated > 0) {
+    console.log('\n📊 מעדכן תשובות לשאלות סטטיסטיקה...');
+    var updatedMatchIds = [];
+    for (var i2 = 0; i2 < apiMatches.length; i2++) {
+      var am2 = apiMatches[i2];
+      var homeHe2 = toHeb(am2.homeTeam.name);
+      var awayHe2 = toHeb(am2.awayTeam.name);
+      var dm2 = dbMatchesAll.find(function(dm) { return dm.home_team === homeHe2 && dm.away_team === awayHe2; });
+      if (dm2 && dm2.home_score !== null) continue; // כבר היה מעודכן
+      if (dm2) updatedMatchIds.push({ dbId: dm2.id, apiId: am2.id });
+    }
+    for (var si = 0; si < updatedMatchIds.length; si++) {
+      var matchData = await fetchMatchStats(updatedMatchIds[si].apiId);
+      if (!matchData) continue;
+      var stats = extractStats(matchData);
+      await updateQuestionsCorrectAnswer(updatedMatchIds[si].dbId, stats);
+    }
+  }
+
+  // ──────────────────────────────────────────────────
+  // שלב 5: חשב מחדש ניקוד לכל המשתמשים
   // ──────────────────────────────────────────────────
   if (updated === 0) {
-    console.log('ℹ️  אין תוצאות חדשות — אין צורך בחישוב ניקוד.');
+    console.log('\n🎉 סיום! אין תוצאות חדשות לחישוב ניקוד.');
     return;
   }
 
@@ -392,6 +528,9 @@ async function main() {
 
   // טען מחדש את המשחקים (כולל העדכונים)
   var allMatches = await sbGet('matches', 'select=*');
+
+  // טען את כל השאלות (לחישוב tolerance)
+  var allQuestions = await sbGet('questions', 'select=id,type,tolerance,correct,points');
 
   // טען את כל המשתמשים
   var allUsers = await sbGet('user_data', 'select=*');
@@ -429,13 +568,20 @@ async function main() {
       totalScore += pts;
     }
 
-    // ניקוד משאלות
+    // ניקוד משאלות (כולל tolerance לשאלות נומריות)
     var answerKeys = Object.keys(answers);
     for (var ai = 0; ai < answerKeys.length; ai++) {
-      var ans = answers[answerKeys[ai]];
-      if (ans && ans.correct && ans.pts) {
-        totalScore += ans.pts;
+      var ak = answerKeys[ai];
+      var ans = answers[ak];
+      if (!ans || !ans.pts) continue;
+      var qRow = allQuestions.find(function(q) { return String(q.id) === ak; });
+      var qCorrect;
+      if (qRow && qRow.type === 'numeric' && qRow.correct !== null) {
+        qCorrect = Math.abs(+ans.sel - +qRow.correct) <= (qRow.tolerance || 0);
+      } else {
+        qCorrect = !!ans.correct;
       }
+      if (qCorrect) totalScore += ans.pts;
     }
 
     // ניקוד מהימור אלוף (נבדק רק בסוף הטורניר — כאן שומרים אותו כצפי)
