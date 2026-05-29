@@ -109,6 +109,11 @@ const NAME_MAP = {
   'Chile':               'צ׳ילה',
   'Venezuela':           'ונצואלה',
   'Bolivia':             'בוליביה',
+  // ── ליגת האלופות ──
+  'Paris Saint-Germain FC':      'פריז סן ז\'רמן',
+  'Paris Saint-Germain':         'פריז סן ז\'רמן',
+  'Paris SG':                    'פריז סן ז\'רמן',
+  'PSG':                         'פריז סן ז\'רמן',
   // ── קבוצות פרמייר ליג (לבדיקת המערכת) ──
   'Arsenal FC':                  'ארסנל',
   'Arsenal':                     'ארסנל',

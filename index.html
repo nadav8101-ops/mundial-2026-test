@@ -824,7 +824,7 @@ async function loadQuestionsFromDB() {
 
   var result = await sb
     .from('questions')
-    .select('*, matches(home_team, away_team, home_flag, away_flag)')
+    .select('*, matches(home_team, away_team, home_flag, away_flag, lock_time, status)')
     .eq('question_date', today)
     .eq('active', true)
     .order('id');
@@ -836,14 +836,20 @@ async function loadQuestionsFromDB() {
     var matchLabel = m
       ? (m.home_flag || '') + ' ' + m.home_team + ' – ' + m.away_team + ' ' + (m.away_flag || '')
       : 'שאלה יומית';
+    var lockTime = m && m.lock_time ? new Date(m.lock_time) : null;
+    var isLive   = m && (m.status === 'LIVE' || m.status === 'FINISHED');
     return {
       id:         String(q.id),
       matchLabel: matchLabel,
       bg:         '#182e18',
       text:       q.text,
-      options:    typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+      options:    typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []),
       correct:    q.correct,
       pts:        q.points,
+      type:       q.type      || 'choice',
+      tolerance:  q.tolerance || 0,
+      locked:     isLive || (lockTime && new Date() >= lockTime),
+      lockTime:   lockTime,
     };
   });
 }
@@ -1318,6 +1324,36 @@ function renderQuestions() {
 
 function qHTML(q) {
   var ans=D.answers[q.id], done=!!ans;
+  var header = '<div class="card" id="qcard-' + q.id + '">' +
+    '<div class="qtag" style="background:' + q.bg + '">' + q.matchLabel + '</div>' +
+    '<div class="qhdr"><div class="qtext">' + q.text + '</div><span class="qpts">' + q.pts + ' נק\'</span></div>';
+
+  // אם המשחק התחיל ואין תשובה — הצג "נעול"
+  if (q.locked && !done) {
+    return header + '<div class="qres" style="color:var(--muted)">🔒 הניחוש נסגר</div></div>';
+  }
+
+  if (q.type === 'numeric') {
+    var tolNote = q.tolerance > 0 ? ' <span style="font-size:11px;color:var(--gold)">±' + q.tolerance + '</span>' : '';
+    var numBody;
+    if (!done) {
+      numBody = '<div class="qopts" id="qopts-' + q.id + '">' +
+        '<input class="cinput" id="qnum-' + q.id + '" type="number" min="0" max="99" style="width:80px;text-align:center" ' +
+        'oninput="(function(v){var b=document.getElementById(\'qsub-' + q.id + '\');if(b)b.style.display=v!==\'\'?\'block\':\'none\';})(this.value)">' +
+        tolNote + '</div>' +
+        '<button class="qsub" id="qsub-' + q.id + '" style="display:none" onclick="submitQ(\'' + q.id + '\')">שלח תשובה</button>';
+    } else {
+      var color = ans.correct ? 'var(--green)' : 'var(--red)';
+      var icon  = ans.correct ? '✓' : '✗';
+      var msg   = ans.correct
+        ? icon + ' נכון! +' + q.pts + ' נקודות · בחרת: ' + ans.sel
+        : icon + ' לא נכון · בחרת: ' + ans.sel + ' | נכון: ' + (q.correct !== null ? q.correct : '?');
+      numBody = '<div class="qres" style="color:' + color + '">' + msg + '</div>';
+    }
+    return header + numBody + '</div>';
+  }
+
+  // שאלה רגילה — multiple choice
   var opts = q.options.map(function(o) {
     var cls='qo';
     if (done) {
@@ -1329,13 +1365,10 @@ function qHTML(q) {
   }).join('');
   var sub = !done ? '<button class="qsub" id="qsub-' + q.id + '" style="display:none" onclick="submitQ(\'' + q.id + '\')">שלח תשובה</button>' : '';
   var res = done ? '<div class="qres" style="color:' + (ans.correct?'var(--green)':'var(--red)') + '">' +
-    (ans.correct?'\u2713 נכון! +' + q.pts + ' נקודות':'\u2717 לא נכון \u00B7 תשובה: ' + q.correct) + '</div>' : '';
-  return '<div class="card" id="qcard-' + q.id + '">' +
-    '<div class="qtag" style="background:' + q.bg + '">' + q.matchLabel + '</div>' +
-    '<div class="qhdr"><div class="qtext">' + q.text + '</div><span class="qpts">' + q.pts + ' נק\'</span></div>' +
+    (ans.correct?'✓ נכון! +' + q.pts + ' נקודות':'✗ לא נכון · תשובה: ' + q.correct) + '</div>' : '';
+  return header +
     '<div class="qopts" id="qopts-' + q.id + '">' + opts + '</div>' +
-    sub + res +
-  '</div>';
+    sub + res + '</div>';
 }
 
 function selQ(qid, opt) {
@@ -1349,17 +1382,33 @@ function selQ(qid, opt) {
 }
 
 async function submitQ(qid) {
-  var s=document.getElementById('qsub-'+qid);
-  var sel=s?s.dataset.sel:null; if(!sel) return;
-  var q=QUESTIONS.find(function(q) { return q.id===qid; });
-  var correct=sel===q.correct;
-  D.answers[qid]={sel:sel,correct:correct};
-  if(correct) D.score=(D.score||0)+q.pts;
+  var q = QUESTIONS.find(function(q) { return q.id === qid; });
+  if (!q) return;
+  if (q.locked || (q.lockTime && new Date() >= q.lockTime)) {
+    pop('🔒 הניחוש נסגר', '#ff4d6a');
+    var lockEl = document.getElementById('qcard-' + qid);
+    if (lockEl) lockEl.outerHTML = qHTML(q);
+    return;
+  }
+  var sel, correct;
+  if (q.type === 'numeric') {
+    var inp = document.getElementById('qnum-' + qid);
+    sel = inp ? inp.value.trim() : null;
+    if (sel === null || sel === '') return;
+    correct = q.correct !== null && Math.abs(+sel - +q.correct) <= (q.tolerance || 0);
+  } else {
+    var s = document.getElementById('qsub-' + qid);
+    sel = s ? s.dataset.sel : null;
+    if (!sel) return;
+    correct = sel === q.correct;
+  }
+  D.answers[qid] = { sel: sel, correct: correct, pts: correct ? q.pts : 0 };
+  if (correct) D.score = (D.score || 0) + q.pts;
   await syncD();
-  if(correct){pop('\u2713 נכון! +' + q.pts + ' נקודות','#4d8fff');}
-  else pop('\u2717 לא נכון','#ff4d6a');
-  var old=document.getElementById('qcard-'+qid);
-  old.outerHTML=qHTML(q);
+  if (correct) pop('✓ נכון! +' + q.pts + ' נקודות', '#4d8fff');
+  else pop('✗ לא נכון', '#ff4d6a');
+  var old = document.getElementById('qcard-' + qid);
+  old.outerHTML = qHTML(q);
   syncQChips(); updateHeader();
 }
 
