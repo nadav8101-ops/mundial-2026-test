@@ -1516,10 +1516,27 @@ function renderChampSection() {
 // ──────────────────────────────────────────────
 //  SCORER / ASSIST — FIXED: replaced smart quotes with regular quotes
 // ──────────────────────────────────────────────
-// זמן נעילת הימורי השחקנים = שעה לפני בעיטת משחק הפתיחה (ללא משחקי בדיקה).
-// מתבסס על שעת הבעיטה האמיתית (match_date) ולא על lock_time שעלול להיות חסר.
-// אם אין משחק פתיחה תקין — מחזיר null וההימור נשאר פתוח.
+// משחק הפתיחה של המונדיאל — מקסיקו נגד דרום אפריקה.
+// ההימור על מלך השערים/בישולים פתוח עד שעה לפני בעיטת הפתיחה.
+// (אם שמות הקבוצות במסד שונים מעט — עדכן כאן)
+var OPENING_HOME = 'מקסיקו';
+var OPENING_AWAY = 'דרום אפריקה';
+
+function openingMatch() {
+  return MATCHES.find(function(m) {
+    var pair = (m.home || '') + '|' + (m.away || '');
+    return pair.indexOf(OPENING_HOME) !== -1 && pair.indexOf(OPENING_AWAY) !== -1;
+  }) || null;
+}
+
+// זמן נעילת הימורי השחקנים = שעה לפני בעיטת משחק הפתיחה (מקסיקו–דרום אפריקה).
+// מתבסס על שעת הבעיטה האמיתית (match_date). אם משחק הפתיחה לא נמצא —
+// גיבוי לשעה לפני המשחק המוקדם ביותר; ואם אין נתון תקין — נשאר פתוח.
 function playerBetsLockTime() {
+  var om = openingMatch();
+  if (om && om.dateObj && !isNaN(om.dateObj.getTime()) && om.dateObj.getTime() > 0) {
+    return new Date(om.dateObj.getTime() - 60 * 60 * 1000);
+  }
   var kicks = MATCHES
     .filter(function(m) {
       return m.group !== 'פרמייר ליג' &&
@@ -1527,7 +1544,7 @@ function playerBetsLockTime() {
     })
     .map(function(m) { return m.dateObj.getTime(); });
   if (!kicks.length) return null;
-  return new Date(Math.min.apply(null, kicks) - 60 * 60 * 1000); // שעה לפני הבעיטה
+  return new Date(Math.min.apply(null, kicks) - 60 * 60 * 1000);
 }
 
 function canEditPlayerBet() {
