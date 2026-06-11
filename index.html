@@ -1522,6 +1522,11 @@ function renderChampSection() {
 var OPENING_HOME = 'מקסיקו';
 var OPENING_AWAY = 'דרום אפריקה';
 
+// אופציונלי: קבע ידנית את שעת הבעיטה המדויקת של משחק הפתיחה.
+// כל עוד לא הגיע הזמן הזה פחות שעה — ההימורים פתוחים וניתנים לעריכה.
+// השאר null כדי לזהות אוטומטית את מקסיקו–דרום אפריקה מהמסד.
+var OPENING_KICKOFF = null; // לדוגמה: new Date('2026-06-11T19:00:00Z')
+
 function openingMatch() {
   return MATCHES.find(function(m) {
     var pair = (m.home || '') + '|' + (m.away || '');
@@ -1533,6 +1538,9 @@ function openingMatch() {
 // מתבסס על שעת הבעיטה האמיתית (match_date). אם משחק הפתיחה לא נמצא —
 // גיבוי לשעה לפני המשחק המוקדם ביותר; ואם אין נתון תקין — נשאר פתוח.
 function playerBetsLockTime() {
+  if (OPENING_KICKOFF instanceof Date && !isNaN(OPENING_KICKOFF.getTime())) {
+    return new Date(OPENING_KICKOFF.getTime() - 60 * 60 * 1000);
+  }
   var om = openingMatch();
   if (om && om.dateObj && !isNaN(om.dateObj.getTime()) && om.dateObj.getTime() > 0) {
     return new Date(om.dateObj.getTime() - 60 * 60 * 1000);
