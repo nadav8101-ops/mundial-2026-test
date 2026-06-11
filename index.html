@@ -460,15 +460,20 @@ button{touch-action:manipulation}
       </div>
     </div>
 
-    <!-- QUESTIONS -->
+    <!-- QUESTIONS — שאלות בונוס בניהול ידני -->
     <div class="sec" id="sec-questions">
       <div class="card" style="margin-bottom:13px">
-        <div style="font-size:14px;font-weight:900;margin-bottom:3px">📅 שאלות יום 14 ביוני</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:11px">סטטיסטיקות ממשחקי אתמול · ענה לפני חצות</div>
-        <div class="chips">
-          <div class="chip"><div class="cv" id="qc-ok" style="color:var(--green)">0</div><div class="cl">נכונות</div></div>
-          <div class="chip"><div class="cv" id="qc-bad" style="color:var(--red)">0</div><div class="cl">שגויות</div></div>
-          <div class="chip"><div class="cv" id="qc-left" style="color:var(--blue)">4</div><div class="cl">נותרו</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:15px;font-weight:900;margin-bottom:2px">❓ שאלות בונוס</div>
+            <div style="font-size:11px;color:var(--muted)">הוסף שאלה והזן ניקוד ידני לכל משתתף</div>
+          </div>
+          <button onclick="toggleAddQuestion()" class="gbtn" style="width:auto;padding:9px 16px;margin-top:0;background:linear-gradient(135deg,var(--blue),#1a4fb8);font-size:14px">➕ שאלה</button>
+        </div>
+        <div id="addq-form" style="display:none;margin-top:12px">
+          <input class="sinput" id="addq-text" placeholder="כתוב את השאלה..." style="margin-bottom:8px"
+                 onkeydown="if(event.key===\'Enter\')saveNewQuestion()">
+          <button class="savebtn" onclick="saveNewQuestion()">שמור שאלה</button>
         </div>
       </div>
       <div id="q-list"></div>
@@ -820,36 +825,16 @@ async function loadMatchesFromDB() {
 
 async function loadQuestionsFromDB() {
   var sb = await getSupabase();
-  var today = new Date().toISOString().split('T')[0];
-
   var result = await sb
-    .from('questions')
-    .select('*, matches(home_team, away_team, home_flag, away_flag, lock_time, status)')
-    .eq('question_date', today)
-    .eq('active', true)
-    .order('id');
-
-  if (result.error) { console.error('loadQuestions:', result.error.message); return; }
-
+    .from('manual_questions')
+    .select('id, text, scores, created_at')
+    .order('created_at', { ascending: false });
+  if (result.error) { console.error('loadQuestions:', result.error.message); QUESTIONS = []; return; }
   QUESTIONS = (result.data || []).map(function(q) {
-    var m = q.matches;
-    var matchLabel = m
-      ? (m.home_flag || '') + ' ' + m.home_team + ' – ' + m.away_team + ' ' + (m.away_flag || '')
-      : 'שאלה יומית';
-    var lockTime = m && m.lock_time ? new Date(m.lock_time) : null;
-    var isLive   = m && (m.status === 'LIVE' || m.status === 'FINISHED');
     return {
-      id:         String(q.id),
-      matchLabel: matchLabel,
-      bg:         '#182e18',
-      text:       q.text,
-      options:    typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []),
-      correct:    q.correct,
-      pts:        q.points,
-      type:       q.type      || 'choice',
-      tolerance:  q.tolerance || 0,
-      locked:     isLive || (lockTime && new Date() >= lockTime),
-      lockTime:   lockTime,
+      id:     q.id,
+      text:   q.text,
+      scores: typeof q.scores === 'string' ? JSON.parse(q.scores) : (q.scores || []),
     };
   });
 }
@@ -971,6 +956,7 @@ async function launchApp(user) {
 // ──────────────────────────────────────────────
 var currentTab='matches', currentSub='open', currentGf='all', currentTestSub='open';
 var LEADERS_DATA = [];
+var PARTICIPANTS = [];
 
 function switchTab(tab, idx) {
   currentTab = tab;
@@ -1318,106 +1304,138 @@ function editPred(id) {
 //  QUESTIONS
 // ──────────────────────────────────────────────
 function renderQuestions() {
-  document.getElementById('q-list').innerHTML = QUESTIONS.map(qHTML).join('');
-  syncQChips();
+  var list = document.getElementById('q-list');
+  if (!list) return;
+  if (!QUESTIONS.length) {
+    list.innerHTML = '<div class="empty">אין שאלות עדיין — לחץ ➕ כדי להוסיף</div>';
+    return;
+  }
+  list.innerHTML = QUESTIONS.map(qHTML).join('');
 }
 
 function qHTML(q) {
-  var ans=D.answers[q.id], done=!!ans;
-  var header = '<div class="card" id="qcard-' + q.id + '">' +
-    '<div class="qtag" style="background:' + q.bg + '">' + q.matchLabel + '</div>' +
-    '<div class="qhdr"><div class="qtext">' + q.text + '</div><span class="qpts">' + q.pts + ' נק\'</span></div>';
+  var scoresHtml = (q.scores && q.scores.length)
+    ? q.scores.map(function(s, i) {
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 2px;border-bottom:1px solid var(--border)">' +
+          '<span style="font-size:13px;color:var(--text2)">\uD83D\uDC64 ' + (s.name || 'אנונימי') + '</span>' +
+          '<span style="display:flex;align-items:center;gap:10px">' +
+            '<span style="font-size:14px;font-weight:800;color:var(--blue)">' + s.points + ' נק\'</span>' +
+            '<button onclick="removeParticipantScore(\'' + q.id + '\',' + i + ')" style="background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;font-family:inherit">✕</button>' +
+          '</span>' +
+        '</div>';
+      }).join('')
+    : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">עדיין לא נוספו משתתפים</div>';
 
-  // אם המשחק התחיל ואין תשובה — הצג "נעול"
-  if (q.locked && !done) {
-    return header + '<div class="qres" style="color:var(--muted)">🔒 הניחוש נסגר</div></div>';
-  }
-
-  if (q.type === 'numeric') {
-    var tolNote = q.tolerance > 0 ? ' <span style="font-size:11px;color:var(--gold)">±' + q.tolerance + '</span>' : '';
-    var numBody;
-    if (!done) {
-      numBody = '<div class="qopts" id="qopts-' + q.id + '">' +
-        '<input class="cinput" id="qnum-' + q.id + '" type="number" min="0" max="99" style="width:80px;text-align:center" ' +
-        'oninput="(function(v){var b=document.getElementById(\'qsub-' + q.id + '\');if(b)b.style.display=v!==\'\'?\'block\':\'none\';})(this.value)">' +
-        tolNote + '</div>' +
-        '<button class="qsub" id="qsub-' + q.id + '" style="display:none" onclick="submitQ(\'' + q.id + '\')">שלח תשובה</button>';
-    } else {
-      var color = ans.correct ? 'var(--green)' : 'var(--red)';
-      var icon  = ans.correct ? '✓' : '✗';
-      var msg   = ans.correct
-        ? icon + ' נכון! +' + q.pts + ' נקודות · בחרת: ' + ans.sel
-        : icon + ' לא נכון · בחרת: ' + ans.sel + ' | נכון: ' + (q.correct !== null ? q.correct : '?');
-      numBody = '<div class="qres" style="color:' + color + '">' + msg + '</div>';
-    }
-    return header + numBody + '</div>';
-  }
-
-  // שאלה רגילה — multiple choice
-  var opts = q.options.map(function(o) {
-    var cls='qo';
-    if (done) {
-      if(o===q.correct) cls+=' ok';
-      else if(ans.sel===o) cls+=' bad';
-      else cls+=' dis';
-    }
-    return '<button class="' + cls + '" onclick="selQ(\'' + q.id + '\',\'' + o + '\')">' + o + '</button>';
+  var options = '<option value="">בחר משתתף…</option>' + (PARTICIPANTS || []).map(function(u) {
+    return '<option value="' + u.id + '">' + (u.name || 'אנונימי') + '</option>';
   }).join('');
-  var sub = !done ? '<button class="qsub" id="qsub-' + q.id + '" style="display:none" onclick="submitQ(\'' + q.id + '\')">שלח תשובה</button>' : '';
-  var res = done ? '<div class="qres" style="color:' + (ans.correct?'var(--green)':'var(--red)') + '">' +
-    (ans.correct?'✓ נכון! +' + q.pts + ' נקודות':'✗ לא נכון · תשובה: ' + q.correct) + '</div>' : '';
-  return header +
-    '<div class="qopts" id="qopts-' + q.id + '">' + opts + '</div>' +
-    sub + res + '</div>';
+
+  return '<div class="card">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">' +
+      '<div style="font-size:15px;font-weight:700;flex:1;line-height:1.45">' + q.text + '</div>' +
+      '<button onclick="deleteQuestion(\'' + q.id + '\')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--red);font-size:13px;padding:5px 9px;cursor:pointer;font-family:inherit">\uD83D\uDDD1</button>' +
+    '</div>' +
+    '<div>' + scoresHtml + '</div>' +
+    '<div style="display:flex;gap:6px;margin-top:10px">' +
+      '<select id="qsel-' + q.id + '" class="field-input" style="flex:1;padding:9px 10px">' + options + '</select>' +
+      '<input id="qpts-' + q.id + '" class="cinput" type="number" min="0" placeholder="נק\'" style="width:64px;border-color:var(--blue)">' +
+      '<button onclick="addParticipantScore(\'' + q.id + '\')" class="savebtn" style="width:auto;padding:0 16px;margin-top:0">➕</button>' +
+    '</div>' +
+  '</div>';
 }
 
-function selQ(qid, opt) {
-  if (D.answers[qid]) return;
-  document.querySelectorAll('#qopts-' + qid + ' .qo').forEach(function(b) {
-    b.classList.remove('sel');
-    if(b.textContent===opt) b.classList.add('sel');
-  });
-  var s=document.getElementById('qsub-'+qid);
-  if(s){s.style.display='block';s.dataset.sel=opt;}
+function toggleAddQuestion() {
+  var f = document.getElementById('addq-form');
+  if (!f) return;
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
 }
 
-async function submitQ(qid) {
-  var q = QUESTIONS.find(function(q) { return q.id === qid; });
+async function saveNewQuestion() {
+  var inp = document.getElementById('addq-text');
+  var text = inp ? inp.value.trim() : '';
+  if (!text) { pop('כתוב שאלה תחילה', '#ff4d6a'); return; }
+  var sb = await getSupabase();
+  var r = await sb.from('manual_questions').insert({ text: text, scores: [] }).select().single();
+  if (r.error) { pop('שגיאה: ' + r.error.message, '#ff4d6a'); return; }
+  inp.value = '';
+  document.getElementById('addq-form').style.display = 'none';
+  await loadQuestionsFromDB();
+  renderQuestions();
+  pop('✓ שאלה נוספה', '#4d8fff');
+}
+
+async function addParticipantScore(qid) {
+  var selEl = document.getElementById('qsel-' + qid);
+  var ptsEl = document.getElementById('qpts-' + qid);
+  var uid = selEl ? selEl.value : '';
+  var pts = ptsEl ? ptsEl.value : '';
+  if (!uid)       { pop('בחר משתתף', '#ff4d6a'); return; }
+  if (pts === '') { pop('הזן ניקוד', '#ff4d6a'); return; }
+  var q = QUESTIONS.find(function(x) { return String(x.id) === String(qid); });
   if (!q) return;
-  if (q.locked || (q.lockTime && new Date() >= q.lockTime)) {
-    pop('🔒 הניחוש נסגר', '#ff4d6a');
-    var lockEl = document.getElementById('qcard-' + qid);
-    if (lockEl) lockEl.outerHTML = qHTML(q);
-    return;
-  }
-  var sel, correct;
-  if (q.type === 'numeric') {
-    var inp = document.getElementById('qnum-' + qid);
-    sel = inp ? inp.value.trim() : null;
-    if (sel === null || sel === '') return;
-    correct = q.correct !== null && Math.abs(+sel - +q.correct) <= (q.tolerance || 0);
-  } else {
-    var s = document.getElementById('qsub-' + qid);
-    sel = s ? s.dataset.sel : null;
-    if (!sel) return;
-    correct = sel === q.correct;
-  }
-  D.answers[qid] = { sel: sel, correct: correct, pts: correct ? q.pts : 0 };
-  if (correct) D.score = (D.score || 0) + q.pts;
-  await syncD();
-  if (correct) pop('✓ נכון! +' + q.pts + ' נקודות', '#4d8fff');
-  else pop('✗ לא נכון', '#ff4d6a');
-  var old = document.getElementById('qcard-' + qid);
-  old.outerHTML = qHTML(q);
-  syncQChips(); updateHeader();
+  q.scores = q.scores || [];
+  var name = (PARTICIPANTS.find(function(u) { return u.id === uid; }) || {}).name || '';
+  var existing = q.scores.find(function(s) { return s.uid === uid; });
+  if (existing) existing.points = +pts;
+  else q.scores.push({ uid: uid, name: name, points: +pts });
+  var ok = await saveQuestionScores(qid, q.scores);
+  if (!ok) return;
+  renderQuestions();
+  updateHeader();
+  pop('✓ נשמר', '#4d8fff');
 }
 
-function syncQChips() {
-  var vals=Object.values(D.answers||{});
-  var ok=vals.filter(function(a) { return a.correct; }).length;
-  document.getElementById('qc-ok').textContent=ok;
-  document.getElementById('qc-bad').textContent=vals.length-ok;
-  document.getElementById('qc-left').textContent=QUESTIONS.length-vals.length;
+async function removeParticipantScore(qid, idx) {
+  var q = QUESTIONS.find(function(x) { return String(x.id) === String(qid); });
+  if (!q || !q.scores) return;
+  q.scores.splice(idx, 1);
+  var ok = await saveQuestionScores(qid, q.scores);
+  if (!ok) return;
+  renderQuestions();
+  updateHeader();
+}
+
+async function deleteQuestion(qid) {
+  if (!confirm('למחוק את השאלה לצמיתות?')) return;
+  var sb = await getSupabase();
+  var r = await sb.from('manual_questions').delete().eq('id', qid);
+  if (r.error) { pop('שגיאה: ' + r.error.message, '#ff4d6a'); return; }
+  await loadQuestionsFromDB();
+  renderQuestions();
+  updateHeader();
+  pop('השאלה נמחקה', '#ff4d6a');
+}
+
+async function saveQuestionScores(qid, scores) {
+  var sb = await getSupabase();
+  var r = await sb.from('manual_questions').update({ scores: scores }).eq('id', qid);
+  if (r.error) { pop('שגיאה: ' + r.error.message, '#ff4d6a'); return false; }
+  return true;
+}
+
+// סכום נקודות השאלות הידניות לכל משתתף — לטבלת הדירוג
+async function getManualPointsMap() {
+  var sb = await getSupabase();
+  var r = await sb.from('manual_questions').select('scores');
+  var map = {};
+  if (!r.error && r.data) {
+    r.data.forEach(function(q) {
+      var sc = typeof q.scores === 'string' ? JSON.parse(q.scores) : (q.scores || []);
+      sc.forEach(function(s) { if (s.uid) map[s.uid] = (map[s.uid] || 0) + (+s.points || 0); });
+    });
+  }
+  return map;
+}
+
+// נקודות השאלות של המשתמש הנוכחי — לכותרת
+function myManualPoints() {
+  var total = 0;
+  (QUESTIONS || []).forEach(function(q) {
+    (q.scores || []).forEach(function(s) {
+      if (CUR_USER && s.uid === CUR_USER.id) total += (+s.points || 0);
+    });
+  });
+  return total;
 }
 
 // ──────────────────────────────────────────────
@@ -1627,6 +1645,8 @@ function shareLeaderboardWA() {
 
 async function renderLeaderboard() {
   var rows = await DB.getLeaderboard();
+  var manualMap = await getManualPointsMap();
+  rows.forEach(function(r){ r.score = (r.score||0) + (manualMap[r.id]||0); });
   var sorted = rows.sort(function(a,b) { return b.score-a.score; });
   var medals=['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
   var myRank = sorted.findIndex(function(r) { return r.email===CUR_USER.email; })+1;
@@ -1692,7 +1712,7 @@ function renderInviteList() {
 //  HEADER
 // ──────────────────────────────────────────────
 function updateHeader() {
-  document.getElementById('hdr-score').textContent=D.score||0;
+  document.getElementById('hdr-score').textContent=(D.score||0)+myManualPoints();
 }
 
 // ──────────────────────────────────────────────
@@ -1714,12 +1734,14 @@ async function initSections() {
   document.getElementById('tab-test-bot').style.display = showTest ? '' : 'none';
   if (showTest) renderTestMatches();
 
-  // טעינת נתוני שחקנים לצפייה בניחושים
-  DB.getLeaderboard().then(function(data) { LEADERS_DATA = data; });
+  // טעינת נתוני שחקנים לצפייה בניחושים ולרשימת המשתתפים בשאלות
+  LEADERS_DATA = await DB.getLeaderboard();
+  PARTICIPANTS = LEADERS_DATA;
 
   buildFilterButtons();
   renderMatches();
   renderQuestions();
+  updateHeader();
   renderChampSection();
   renderPlayerGrid('scorer-grid','scorer','#ff5c8a');
   renderPlayerGrid('assist-grid','assist','#3de8e0');
@@ -1733,8 +1755,8 @@ async function initSections() {
     renderMatches();
     if (showTest) renderTestMatches();
     renderQuestions();
-    // רענן נתוני שחקנים לצפייה בניחושים
-    DB.getLeaderboard().then(function(data) { LEADERS_DATA = data; });
+    // רענן נתוני שחקנים לצפייה בניחושים ולרשימת המשתתפים
+    DB.getLeaderboard().then(function(data) { LEADERS_DATA = data; PARTICIPANTS = data; });
   }, 5 * 60 * 1000);
 }
 
