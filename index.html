@@ -786,6 +786,7 @@ function mapMatch(m) {
     apiId:     m.api_id,
     date:      new Date(m.match_date).toLocaleDateString('he-IL'),
     time:      new Date(m.match_date).toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}),
+    dateObj:   new Date(m.match_date),
     lockTime:  new Date(m.lock_time),
     group:     m.group_name || m.stage,
     stage:     m.stage,
@@ -1515,18 +1516,24 @@ function renderChampSection() {
 // ──────────────────────────────────────────────
 //  SCORER / ASSIST — FIXED: replaced smart quotes with regular quotes
 // ──────────────────────────────────────────────
-// זמן נעילת הימורי השחקנים = זמן הנעילה של משחק הפתיחה (שעה לפני הפתיחה),
-// ללא משחקי בדיקה. אחרי זמן זה ההימורים נעולים לכל אורך הטורניר.
+// זמן נעילת הימורי השחקנים = שעה לפני בעיטת משחק הפתיחה (ללא משחקי בדיקה).
+// מתבסס על שעת הבעיטה האמיתית (match_date) ולא על lock_time שעלול להיות חסר.
+// אם אין משחק פתיחה תקין — מחזיר null וההימור נשאר פתוח.
 function playerBetsLockTime() {
-  var times = MATCHES
-    .filter(function(m) { return m.group !== 'פרמייר ליג' && m.lockTime; })
-    .map(function(m) { return m.lockTime.getTime(); });
-  if (!times.length) return TOURNAMENT_START_DATE;
-  return new Date(Math.min.apply(null, times));
+  var kicks = MATCHES
+    .filter(function(m) {
+      return m.group !== 'פרמייר ליג' &&
+             m.dateObj && !isNaN(m.dateObj.getTime()) && m.dateObj.getTime() > 0;
+    })
+    .map(function(m) { return m.dateObj.getTime(); });
+  if (!kicks.length) return null;
+  return new Date(Math.min.apply(null, kicks) - 60 * 60 * 1000); // שעה לפני הבעיטה
 }
 
 function canEditPlayerBet() {
-  return new Date() < playerBetsLockTime();
+  var lock = playerBetsLockTime();
+  if (!lock) return true;            // אין משחק פתיחה ידוע — פתוח להימור
+  return new Date() < lock;
 }
 
 function getPlayerName(bet) {
