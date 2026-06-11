@@ -534,12 +534,12 @@ button{touch-action:manipulation}
 
 <!-- מודל ניחושי שחקנים -->
 <div id="preds-modal" style="display:none;position:fixed;inset:0;background:#000a;z-index:9999;overflow-y:auto;padding:16px" onclick="closePredModal(event)">
-  <div style="background:#1a1a2a;border:1px solid #2a2a4a;border-radius:16px;margin:0 auto;max-width:420px;padding:20px">
-    <div style="font-weight:900;font-size:15px;margin-bottom:4px;text-align:center;direction:rtl" id="preds-modal-title"></div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;margin:0 auto;max-width:420px;padding:20px;box-shadow:var(--shadow)">
+    <div style="font-weight:900;font-size:15px;margin-bottom:4px;text-align:center;direction:rtl;color:var(--text)" id="preds-modal-title"></div>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:14px">ניחושי כל השחקנים</div>
     <div id="preds-modal-list"></div>
     <button onclick="document.getElementById('preds-modal').style.display='none'"
-      style="width:100%;margin-top:16px;padding:10px;background:#2a2a3a;border:1.5px solid #3a3a5a;border-radius:10px;color:#aaa;font-size:13px;cursor:pointer;font-family:inherit">סגור</button>
+      style="width:100%;margin-top:16px;padding:10px;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit">סגור</button>
   </div>
 </div>
 
@@ -1236,15 +1236,15 @@ function showOthersPreds(matchId) {
         var p = u.predictions[matchId];
         var pts = match ? clientCalcPts(p, match) : null;
         var isSelf = CUR_USER && u.id === CUR_USER.id;
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #2a2a4a;direction:rtl">' +
-          '<span style="font-size:13px' + (isSelf?';color:var(--accent);font-weight:700':'') + '">👤 ' + (u.name || 'אנונימי') + (isSelf?' (אני)':'') + '</span>' +
-          '<span style="font-size:15px;font-weight:900;margin:0 12px">' + p.h + '–' + p.a + '</span>' +
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);direction:rtl">' +
+          '<span style="font-size:13px;color:' + (isSelf?'var(--blue);font-weight:700':'var(--text2)') + '">👤 ' + (u.name || 'אנונימי') + (isSelf?' (אני)':'') + '</span>' +
+          '<span style="font-size:15px;font-weight:900;color:var(--text);margin:0 12px">' + p.h + '–' + p.a + '</span>' +
           (pts !== null
-            ? '<span style="font-size:11px;color:' + (pts > 0 ? '#00e87a' : '#ff4d6a') + ';min-width:40px;text-align:left">' + (pts > 0 ? '+' + pts : '0') + ' נק\'</span>'
+            ? '<span style="font-size:11px;color:' + (pts > 0 ? 'var(--green)' : 'var(--red)') + ';min-width:40px;text-align:left">' + (pts > 0 ? '+' + pts : '0') + ' נק\'</span>'
             : '<span style="min-width:40px"></span>') +
         '</div>';
       }).join('')
-    : '<div style="color:#667;text-align:center;padding:20px">אין ניחושים עדיין</div>';
+    : '<div style="color:var(--muted);text-align:center;padding:20px">אין ניחושים עדיין</div>';
 
   document.getElementById('preds-modal').style.display = 'block';
 }
@@ -1316,9 +1316,10 @@ function renderQuestions() {
 function qHTML(q) {
   var scoresHtml = (q.scores && q.scores.length)
     ? q.scores.map(function(s, i) {
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 2px;border-bottom:1px solid var(--border)">' +
-          '<span style="font-size:13px;color:var(--text2)">\uD83D\uDC64 ' + (s.name || 'אנונימי') + '</span>' +
-          '<span style="display:flex;align-items:center;gap:10px">' +
+        var ansLine = s.answer ? '<div style="font-size:11px;color:var(--muted);margin-top:2px">\u201C' + s.answer + '\u201D</div>' : '';
+        return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:8px 2px;border-bottom:1px solid var(--border)">' +
+          '<span style="font-size:13px;color:var(--text2);flex:1;line-height:1.4">\uD83D\uDC64 ' + (s.name || 'אנונימי') + ansLine + '</span>' +
+          '<span style="display:flex;align-items:center;gap:10px;flex-shrink:0">' +
             '<span style="font-size:14px;font-weight:800;color:var(--blue)">' + s.points + ' נק\'</span>' +
             '<button onclick="removeParticipantScore(\'' + q.id + '\',' + i + ')" style="background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;font-family:inherit">✕</button>' +
           '</span>' +
@@ -1336,10 +1337,13 @@ function qHTML(q) {
       '<button onclick="deleteQuestion(\'' + q.id + '\')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--red);font-size:13px;padding:5px 9px;cursor:pointer;font-family:inherit">\uD83D\uDDD1</button>' +
     '</div>' +
     '<div>' + scoresHtml + '</div>' +
-    '<div style="display:flex;gap:6px;margin-top:10px">' +
-      '<select id="qsel-' + q.id + '" class="field-input" style="flex:1;padding:9px 10px">' + options + '</select>' +
-      '<input id="qpts-' + q.id + '" class="cinput" type="number" min="0" placeholder="נק\'" style="width:64px;border-color:var(--blue)">' +
-      '<button onclick="addParticipantScore(\'' + q.id + '\')" class="savebtn" style="width:auto;padding:0 16px;margin-top:0">➕</button>' +
+    '<div style="margin-top:10px">' +
+      '<select id="qsel-' + q.id + '" class="field-input" style="width:100%;padding:9px 10px;margin-bottom:6px">' + options + '</select>' +
+      '<div style="display:flex;gap:6px">' +
+        '<input id="qans-' + q.id + '" class="field-input" type="text" placeholder="תשובת המשתמש (טקסט חופשי)" style="flex:1;padding:9px 10px">' +
+        '<input id="qpts-' + q.id + '" class="cinput" type="number" min="0" placeholder="נק\'" style="width:60px;border-color:var(--blue)">' +
+        '<button onclick="addParticipantScore(\'' + q.id + '\')" class="savebtn" style="width:auto;padding:0 14px;margin-top:0">➕</button>' +
+      '</div>' +
     '</div>' +
   '</div>';
 }
@@ -1367,8 +1371,10 @@ async function saveNewQuestion() {
 async function addParticipantScore(qid) {
   var selEl = document.getElementById('qsel-' + qid);
   var ptsEl = document.getElementById('qpts-' + qid);
+  var ansEl = document.getElementById('qans-' + qid);
   var uid = selEl ? selEl.value : '';
   var pts = ptsEl ? ptsEl.value : '';
+  var answer = ansEl ? ansEl.value.trim() : '';
   if (!uid)       { pop('בחר משתתף', '#ff4d6a'); return; }
   if (pts === '') { pop('הזן ניקוד', '#ff4d6a'); return; }
   var q = QUESTIONS.find(function(x) { return String(x.id) === String(qid); });
@@ -1376,8 +1382,8 @@ async function addParticipantScore(qid) {
   q.scores = q.scores || [];
   var name = (PARTICIPANTS.find(function(u) { return u.id === uid; }) || {}).name || '';
   var existing = q.scores.find(function(s) { return s.uid === uid; });
-  if (existing) existing.points = +pts;
-  else q.scores.push({ uid: uid, name: name, points: +pts });
+  if (existing) { existing.points = +pts; existing.answer = answer; existing.name = name; }
+  else q.scores.push({ uid: uid, name: name, answer: answer, points: +pts });
   var ok = await saveQuestionScores(qid, q.scores);
   if (!ok) return;
   renderQuestions();
