@@ -1090,8 +1090,6 @@ var TOURNAMENT_START_DATE = new Date('2026-06-11T00:00:00Z');
 function clientCalcPts(pred, m) {
   if (!m.result || !pred) return null;
   var mult  = STAGE_MULT[m.stage] || 1;
-  var early = pred.saved_at && new Date(pred.saved_at) < TOURNAMENT_START_DATE;
-  var bonus = early ? 1.5 : 1;
   var raw = 0;
   var ph=+pred.h, pa=+pred.a, rh=m.result.h, ra=m.result.a;
   if (ph===rh && pa===ra)                            raw += BASE_PTS.exact_90;
@@ -1106,7 +1104,7 @@ function clientCalcPts(pred, m) {
     if (pph===rph && ppa===rpa)                      raw += BASE_PTS.exact_pen;
     else if (Math.sign(pph-ppa)===Math.sign(rph-rpa)) raw += BASE_PTS.winner_pen;
   }
-  return Math.round(raw * mult * bonus);
+  return Math.round(raw * mult);
 }
 
 function mHTML(m) {
@@ -1190,7 +1188,7 @@ function mHTML(m) {
   var stageMult = STAGE_MULT[m.stage] || 1;
   var stageColor = m.stage==='R16'?'#1a2a44':m.stage==='QF'?'#1a2a1a':m.stage==='SF'?'#2a1a2a':m.stage==='FINAL'?'#2a1a00':'#1a1a2a';
   var stageTextColor = m.stage==='R16'?'#4d8fff':m.stage==='QF'?'#00e87a':m.stage==='SF'?'#ff5c8a':m.stage==='FINAL'?'#ffd04a':'#667';
-  var earlyBadge = (!done && pred && pred.saved_at && new Date(pred.saved_at) < TOURNAMENT_START_DATE) ? '<span style="font-size:10px;color:#ffd04a">\u26A1 ניחוש מוקדם \u00D71.5</span>' : '';
+  var earlyBadge = '';
 
   // \u05DB\u05E4\u05EA\u05D5\u05E8 \u05E6\u05E4\u05D9\u05D9\u05D4 \u05D1\u05E0\u05D9\u05D7\u05D5\u05E9\u05D9 \u05E9\u05D7\u05E7\u05E0\u05D9\u05DD \u05D0\u05D7\u05E8\u05D9\u05DD (\u05E8\u05E7 \u05D0\u05D7\u05E8\u05D9 \u05E0\u05E2\u05D9\u05DC\u05D4)
   var peekBtn = '';
@@ -1517,8 +1515,18 @@ function renderChampSection() {
 // ──────────────────────────────────────────────
 //  SCORER / ASSIST — FIXED: replaced smart quotes with regular quotes
 // ──────────────────────────────────────────────
+// זמן נעילת הימורי השחקנים = זמן הנעילה של משחק הפתיחה (שעה לפני הפתיחה),
+// ללא משחקי בדיקה. אחרי זמן זה ההימורים נעולים לכל אורך הטורניר.
+function playerBetsLockTime() {
+  var times = MATCHES
+    .filter(function(m) { return m.group !== 'פרמייר ליג' && m.lockTime; })
+    .map(function(m) { return m.lockTime.getTime(); });
+  if (!times.length) return TOURNAMENT_START_DATE;
+  return new Date(Math.min.apply(null, times));
+}
+
 function canEditPlayerBet() {
-  return new Date() < TOURNAMENT_START_DATE;
+  return new Date() < playerBetsLockTime();
 }
 
 function getPlayerName(bet) {
@@ -1535,8 +1543,12 @@ function getPlayerFlag(bet) {
 
 function renderPlayerGrid(gridId, selKey, color) {
   var g = document.getElementById(gridId); if (!g) return;
-  var locked = D[selKey+'Bet'] && !canEditPlayerBet();
-  if (locked) { g.style.display='none'; return; }
+  if (!canEditPlayerBet()) {
+    if (D[selKey+'Bet']) { g.style.display='none'; return; }   // showSaved יציג את ההימור הנעול
+    g.style.display = 'block';
+    g.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px">\uD83D\uDD12 ההימור נסגר \u2014 לא ביצעת הימור</div>';
+    return;
+  }
   g.style.display = 'grid';
   var allPlayers = PLAYERS.concat([{id:'other', name:'אחר (הקלד ידנית)', flag:'\u270F\uFE0F'}]);
   g.innerHTML = allPlayers.map(function(p) {
@@ -1570,6 +1582,7 @@ function checkCountBtn(key) {
 }
 
 async function savePlayerBet(key, label, color, emoji) {
+  if (!canEditPlayerBet()) { pop('\uD83D\uDD12 ההימור נסגר', '#ff4d6a'); renderPlayerGrid(key+'-grid', key, color); return; }
   var pid    = D[key+'Sel'];
   var countEl = document.getElementById(key+'-count');
   var count  = countEl ? +countEl.value : 0;
@@ -1682,9 +1695,8 @@ async function renderLeaderboard() {
     ["הארכה כיוון","80 x שלב","#ff9d3a"],
     ["פנדלים מדויק","200 x שלב","#3de8e0"],
     ["פנדלים מנצח","100 x שלב","#3de8e0"],
-    ["ניחוש מוקדם","x1.5","#ffd04a"],
-    ["שאלה יומית","30-50 נק","#4d8fff"],
-    ["אלוף מונדיאל","500-750 נק","#ffd04a"],
+    ["שאלות בונוס","ידני","#4d8fff"],
+    ["אלוף מונדיאל","100-500 נק","#ffd04a"],
     ["מלך שערים","50+30 נק","#ff5c8a"],
     ["מלך בישולים","50+30 נק","#3de8e0"],
   ];
