@@ -163,7 +163,7 @@ async function main() {
 
     // lock_time = שעה לפני המשחק
     const lockDate = new Date(matchDate);
-    lockDate.setHours(lockDate.getHours() - 1);
+lockDate.setMinutes(lockDate.getMinutes() - 5);   // 5 דקות לפני
 
     // Group name בעברית
     let groupName = m.group || m.round;
