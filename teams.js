@@ -88,6 +88,7 @@ const ALIASES = {
   'cape verde islands':          'cape verde', // football-data.org מוסיף "Islands"
   'congo dr':                    'dr congo',
   'democratic republic congo':   'dr congo',
+  'cape verde islands': 'cape verde',
   'congo':                       'dr congo', // אין קונגו-בראזוויל בטורניר
 };
 
