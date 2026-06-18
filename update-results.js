@@ -58,6 +58,8 @@ const NAME_MAP = {
   'New Zealand':         'ניו זילנד',
   'Spain':               'ספרד',
   'Cape Verde':          'כף ורדה',
+  'Cape Verde Islands':  'כף ורדה',
+  'Cabo Verde':          'כף ורדה',
   'Saudi Arabia':        'ערב הסעודית',
   'Uruguay':             'אורוגוואי',
   'France':              'צרפת',
@@ -96,6 +98,9 @@ const NAME_MAP = {
   'Cameroon':            'קמרון',
   'Nigeria':             'ניגריה',
   'DR Congo':            'קונגו',
+  'Congo DR':            'קונגו',
+  'Congo (DR)':          'קונגו',
+  'DRC':                 'קונגו',
   'Mali':                'מאלי',
   'Burkina Faso':        'בורקינה פאסו',
   'Tanzania':            'טנזניה',
@@ -113,6 +118,9 @@ const NAME_MAP = {
   'Chile':               'צ׳ילה',
   'Venezuela':           'ונצואלה',
   'Bolivia':             'בוליביה',
+  'IR Iran':             'איראן',
+  'Korea, South':        'דרום קוריאה',
+  'Korea Republic':      'דרום קוריאה',
 };
 
 function toHeb(name) {
@@ -252,7 +260,8 @@ async function main() {
     }
 
     if (!dbMatch) {
-      console.log('   ⚠️  לא נמצא ב-DB: ' + am.homeTeam.name + ' vs ' + am.awayTeam.name);
+      console.log('   ⚠️  לא נמצא ב-DB: ' + am.homeTeam.name + ' vs ' + am.awayTeam.name +
+        '  (ניסיון תרגום: "' + homeHe + '" מול "' + awayHe + '")');
       continue;
     }
 
