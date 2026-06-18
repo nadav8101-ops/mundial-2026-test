@@ -1,35 +1,26 @@
 # ═══════════════════════════════════════════════════════════════
-#  GitHub Actions — עדכון תוצאות יומי אוטומטי
-#  רץ כל יום ב-23:30 שעון ישראל (20:30 UTC)
+#  GitHub Actions — עדכון תוצאות אוטומטי
+#  רץ כל 3 שעות (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 UTC)
 #  אפשר גם להריץ ידנית מלשונית Actions
 # ═══════════════════════════════════════════════════════════════
-
 name: Update World Cup Results
-
 on:
   schedule:
-    # כל יום ב-20:30 UTC = 23:30 שעון ישראל (קיץ)
+    # כל 3 שעות, מתחלק בשעה עגולה (UTC)
     # אפשר לשנות — https://crontab.guru
-    - cron: '30 20 * * *'
-
-    # אפשרות נוספת: גם ב-02:00 בלילה (למקרה שמשחקים מאוחרים)
-    - cron: '0 23 * * *'
-
+    - cron: '0 */3 * * *'
   # כפתור "Run workflow" ידני בדאשבורד GitHub
   workflow_dispatch:
-
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Run update script
         env:
           FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
