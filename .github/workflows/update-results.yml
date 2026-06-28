@@ -6,10 +6,7 @@
 name: Update World Cup Results
 on:
   schedule:
-    # כל 3 שעות, מתחלק בשעה עגולה (UTC)
-    # אפשר לשנות — https://crontab.guru
     - cron: '0 */3 * * *'
-  # כפתור "Run workflow" ידני בדאשבורד GitHub
   workflow_dispatch:
 jobs:
   update:
@@ -17,14 +14,24 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Update team names
+        env:
+          FOOTBALL_API_KEY:     ${{ secrets.FOOTBALL_API_KEY }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON:        ${{ secrets.SUPABASE_ANON }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+        run: node update-teams.js
+
       - name: Run update script
         env:
-          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
+          FOOTBALL_API_KEY:     ${{ secrets.FOOTBALL_API_KEY }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON:        ${{ secrets.SUPABASE_ANON }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
         run: node update-results.js
