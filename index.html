@@ -384,7 +384,7 @@ button{touch-action:manipulation}
         <button class="st" onclick="setTestSub('done',this)">✅ תוצאות</button>
       </div>
       <div id="match-list-test"></div>
-      <div class="hint">90 דק': מדויק 10 · כיוון 5 (ללא הארכה/פנדלים)</div>
+      <div class="hint">90 דק': מדויק 100 · כיוון 50 (ללא הארכה/פנדלים)</div>
     </div>
 
     <!-- MATCHES -->
@@ -395,7 +395,7 @@ button{touch-action:manipulation}
         <button class="st" onclick="setSub('done',this)">✅ תוצאות</button>
       </div>
       <div id="match-list"></div>
-      <div class="hint">90 דק': מדויק 10 · כיוון 5 &nbsp;|&nbsp; הארכה: מדויק 15 · כיוון 8 &nbsp;|&nbsp; פנדלים: מדויק 20 · מנצח 10</div>
+      <div class="hint">90 דק': מדויק 100 · כיוון 50 &nbsp;|&nbsp; הארכה: מדויק 150 · כיוון 80 &nbsp;|&nbsp; פנדלים: מדויק 200 · מנצח 100 &nbsp;|&nbsp; × מכפיל שלב</div>
     </div>
 
     <!-- GLOBAL BETS -->
@@ -540,6 +540,26 @@ button{touch-action:manipulation}
     <div id="preds-modal-list"></div>
     <button onclick="document.getElementById('preds-modal').style.display='none'"
       style="width:100%;margin-top:16px;padding:10px;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit">סגור</button>
+  </div>
+</div>
+
+<!-- BREAKDOWN MODAL: מציג למשתמש פירוט נקודות לכל משחק -->
+<div id="bd-modal" style="display:none;position:fixed;inset:0;background:#000a;z-index:9999;overflow-y:auto;padding:16px" onclick="closeBreakdownModal(event)">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;margin:0 auto;max-width:520px;padding:20px;box-shadow:var(--shadow);direction:rtl">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px">
+      <div>
+        <div id="bd-name" style="font-weight:900;font-size:17px;color:var(--text)"></div>
+        <div id="bd-subtitle" style="font-size:11px;color:var(--muted);margin-top:3px"></div>
+      </div>
+      <div style="text-align:left">
+        <div id="bd-total" style="font-weight:900;font-size:24px;color:var(--gold)"></div>
+        <div style="font-size:10px;color:var(--muted)">סה״כ נקודות</div>
+      </div>
+    </div>
+    <div id="bd-summary" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"></div>
+    <div id="bd-list" style="max-height:60vh;overflow-y:auto;padding-left:4px"></div>
+    <button onclick="document.getElementById('bd-modal').style.display='none'"
+      style="width:100%;margin-top:14px;padding:10px;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit">סגור</button>
   </div>
 </div>
 
@@ -706,6 +726,7 @@ var DB = {
         bets: Object.keys(d.predictions || {}).length,
         qa: Object.values(d.answers || {}).filter(function(a) { return a.correct; }).length,
         champion: d.champ_bet ? d.champ_bet.teamId : null,
+        champBet: d.champ_bet || null,
         predictions: d.predictions || {},
       };
     });
@@ -761,9 +782,75 @@ var PLAYERS = [
   {id:'p5',name:'ויניסיוס ג׳וניור',flag:'🇧🇷'},{id:'p6',name:'ג׳וד בלינגהאם',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
   {id:'p7',name:'לאמין יאמל',flag:'🇪🇸'},{id:'p8',name:'כ. רונאלדו',flag:'🇵🇹'},
 ];
-var CHAMP_PTS   = {groups:500,r16:300,quarters:200,semis:100};
-var CHAMP_LABEL = {groups:'לפני הטורניר',r16:'אחרי שלב בתים',quarters:'אחרי שמינית גמר',semis:'אחרי רבע גמר'};
-var CURRENT_STAGE = 'groups';
+// ── הימור אלופה: 3 חלונות הימור ──────────────────────────────
+//  הניקוד יורד ככל שמהמרים מאוחר יותר (פחות סיכון = פחות נקודות).
+//  כדי לשנות את הניקוד — ערוך כאן בלבד.
+var CHAMP_PTS = {
+  start:   3000,  // מההתחלה — לפני סיבוב 32 (הסיכון הגדול ביותר)
+  postR32: 1800,  // אחרי סיום סיבוב 32, לפני שמינית הגמר
+  postR16: 900,   // אחרי סיום שמינית הגמר, לפני רבע הגמר
+};
+var CHAMP_LABEL = {
+  start:   'מההתחלה',
+  postR32: 'אחרי סיבוב 32',
+  postR16: 'אחרי שמינית גמר',
+};
+// תאימות לאחור — ערכי שלב ישנים שאולי נשמרו ב-DB
+var CHAMP_PTS_LEGACY   = { groups:500, r16:300, quarters:200, semis:100 };
+var CHAMP_LABEL_LEGACY = { groups:'מההתחלה', r16:'אחרי שלב בתים', quarters:'אחרי שמינית גמר', semis:'אחרי רבע גמר' };
+function champPts(stage)   { return CHAMP_PTS[stage]   !== undefined ? CHAMP_PTS[stage]   : (CHAMP_PTS_LEGACY[stage]   || 0); }
+function champLabel(stage) { return CHAMP_LABEL[stage] !== undefined ? CHAMP_LABEL[stage] : (CHAMP_LABEL_LEGACY[stage] || stage); }
+
+// ── זיהוי אוטומטי של חלון ההימור הפעיל ───────────────────────
+//  מחזיר { open:true, stage:'start'|'postR32'|'postR16' }  → ניתן להמר/לשנות
+//  או     { open:false, reason:'...' }                      → נעול
+//
+//  לוח הזמנים:
+//    • חלון 1 (start)   — פתוח מההתחלה עד שסיבוב 32 מתחיל.
+//    • נעול             — כל זמן שסיבוב 32 בעיצומו.
+//    • חלון 2 (postR32) — נפתח כשכל סיבוב 32 הסתיים, עד שהשמינית מתחילה.
+//    • נעול             — כל זמן שהשמינית בעיצומה.
+//    • חלון 3 (postR16) — נפתח כשכל השמינית הסתיימה, עד שהרבע מתחיל.
+//    • נעול לצמיתות     — מרגע שהרבע מתחיל.
+function champWindow() {
+  var now = Date.now();
+
+  function firstKick(stage) {
+    var t = MATCHES
+      .filter(function(m){ return m.stage === stage && m.dateObj && !isNaN(m.dateObj.getTime()); })
+      .map(function(m){ return m.dateObj.getTime(); });
+    return t.length ? Math.min.apply(null, t) : null;
+  }
+  function allDone(stage) {
+    var ms = MATCHES.filter(function(m){ return m.stage === stage; });
+    return ms.length > 0 && ms.every(function(m){ return m.status === 'FINISHED' || m.result; });
+  }
+
+  var r32 = firstKick('R32');
+  var r16 = firstKick('R16');
+  var qf  = firstKick('QF');
+
+  // בודקים מהשלב המאוחר למוקדם, כדי שחוסר נתונים בשלב מוקדם לא יפתח בטעות חלון.
+
+  // רבע הגמר התחיל → נעול לצמיתות
+  if (qf !== null && now >= qf)
+    return { open:false, reason:'נעול לצמיתות — רבע הגמר התחיל. לא ניתן יותר לשנות הימור אלופה.' };
+
+  // השמינית התחילה (והרבע עוד לא):
+  if (r16 !== null && now >= r16) {
+    if (allDone('R16')) return { open:true, stage:'postR16' };   // חלון 3 פתוח
+    return { open:false, reason:'נעול — שמינית הגמר בעיצומה. ייפתח בין סיום השמינית לתחילת רבע הגמר.' };
+  }
+
+  // סיבוב 32 התחיל (והשמינית עוד לא):
+  if (r32 !== null && now >= r32) {
+    if (allDone('R32')) return { open:true, stage:'postR32' };   // חלון 2 פתוח
+    return { open:false, reason:'נעול — סיבוב 32 בעיצומו. ייפתח בין סיום סיבוב 32 לתחילת שמינית הגמר.' };
+  }
+
+  // אף שלב נוקאאוט לא התחיל → חלון הפתיחה פתוח
+  return { open:true, stage:'start' };
+}
 
 // ──────────────────────────────────────────────
 //  DYNAMIC DATA
@@ -1108,6 +1195,205 @@ function clientCalcPts(pred, m) {
   return Math.round(raw * mult);
 }
 
+// ── גרסה מפורטת: מחזירה גם איך הניקוד מורכב, לא רק את הסכום הסופי ──
+//  מחזירה: { total, mult, parts:[{label, raw, kind}] }
+//    kind = 'exact' | 'result' | 'miss'
+function clientCalcPtsBreakdown(pred, m) {
+  var mult = STAGE_MULT[m.stage] || 1;
+  var parts = [];
+
+  if (!m.result || !pred) return { total: 0, mult: mult, parts: parts };
+
+  var ph=+pred.h, pa=+pred.a, rh=m.result.h, ra=m.result.a;
+  if (ph===rh && pa===ra)
+    parts.push({ label:'90 דקות — תוצאה מדויקת', raw: BASE_PTS.exact_90, kind:'exact' });
+  else if (Math.sign(ph-pa)===Math.sign(rh-ra))
+    parts.push({ label:'90 דקות — כיוון נכון', raw: BASE_PTS.result_90, kind:'result' });
+  else
+    parts.push({ label:'90 דקות — לא קלעת', raw: 0, kind:'miss' });
+
+  if (pred.et_h!==undefined && m.resultET) {
+    var peh=+pred.et_h, pea=+pred.et_a, reh=m.resultET.h, rea=m.resultET.a;
+    if (peh===reh && pea===rea)
+      parts.push({ label:'הארכה — תוצאה מדויקת', raw: BASE_PTS.exact_et, kind:'exact' });
+    else if (Math.sign(peh-pea)===Math.sign(reh-rea))
+      parts.push({ label:'הארכה — כיוון נכון', raw: BASE_PTS.result_et, kind:'result' });
+    else
+      parts.push({ label:'הארכה — לא קלעת', raw: 0, kind:'miss' });
+  } else if (m.resultET) {
+    parts.push({ label:'הארכה — לא ניחשת', raw: 0, kind:'miss' });
+  }
+
+  if (pred.pen_h!==undefined && m.resultPen) {
+    var pph=+pred.pen_h, ppa=+pred.pen_a, rph=m.resultPen.h, rpa=m.resultPen.a;
+    if (pph===rph && ppa===rpa)
+      parts.push({ label:'פנדלים — תוצאה מדויקת', raw: BASE_PTS.exact_pen, kind:'exact' });
+    else if (Math.sign(pph-ppa)===Math.sign(rph-rpa))
+      parts.push({ label:'פנדלים — מנצח נכון', raw: BASE_PTS.winner_pen, kind:'result' });
+    else
+      parts.push({ label:'פנדלים — לא קלעת', raw: 0, kind:'miss' });
+  } else if (m.resultPen) {
+    parts.push({ label:'פנדלים — לא ניחשת', raw: 0, kind:'miss' });
+  }
+
+  var rawTotal = parts.reduce(function(s,p){ return s+p.raw; }, 0);
+  return { total: Math.round(rawTotal * mult), mult: mult, parts: parts };
+}
+
+// ──────────────────────────────────────────────
+//  SCORE BREAKDOWN MODAL
+// ──────────────────────────────────────────────
+function showBreakdown(userId) {
+  var user = LEADERS_DATA.find(function(u){ return u.id === userId; });
+  if (!user) return;
+
+  // עבור על כל המשחקים שהסתיימו, ובנה שורת פירוט לכל אחד
+  var finished = MATCHES.filter(function(m){ return m.result && m.group !== 'פרמייר ליג'; });
+
+  // מיין: לפי שלב (גמר ראשון), ובתוך השלב לפי תאריך
+  var stageOrder = { FINAL:0, THIRD:1, SF:2, QF:3, R16:4, R32:5, GROUP:6 };
+  finished.sort(function(a,b){
+    var sa = stageOrder[a.stage] !== undefined ? stageOrder[a.stage] : 99;
+    var sb = stageOrder[b.stage] !== undefined ? stageOrder[b.stage] : 99;
+    if (sa !== sb) return sa - sb;
+    return (b.dateObj && a.dateObj) ? b.dateObj - a.dateObj : 0;
+  });
+
+  var stageLabel = {
+    GROUP: 'בתים', R32: 'סיבוב 32', R16: 'שמינית',
+    QF: 'רבע גמר', SF: 'חצי גמר', THIRD: 'מקום 3', FINAL: 'גמר',
+  };
+
+  var matchPoints = 0;
+  var bestMatch = { name:'', pts:0 };
+  var hits = 0;       // ניחושים שהביאו >0
+  var totalGuessed = 0;
+
+  var rows = finished.map(function(m){
+    var pred = (user.predictions || {})[m.id];
+    var bd   = clientCalcPtsBreakdown(pred, m);
+    matchPoints += bd.total;
+    if (pred) totalGuessed++;
+    if (bd.total > 0) {
+      hits++;
+      if (bd.total > bestMatch.pts) { bestMatch.pts = bd.total; bestMatch.name = m.home + ' – ' + m.away; }
+    }
+
+    // צבע השורה לפי כמה הצליח: ירוק=גדול, כתום=בינוני, אדום=0, אפור=לא ניחש
+    var color;
+    if (!pred)            color = '#778'; // לא ניחש
+    else if (bd.total >= 100) color = 'var(--green)';
+    else if (bd.total > 0)    color = 'var(--orange)';
+    else                  color = '#c44';
+
+    // שורת תוצאת המשחק
+    var resStr = m.result.h + '–' + m.result.a;
+    if (m.resultET)  resStr += ' (הארכה ' + m.resultET.h + '–' + m.resultET.a + ')';
+    if (m.resultPen) resStr += ' (פנד׳ ' + m.resultPen.h + '–' + m.resultPen.a + ')';
+
+    // שורת הניחוש
+    var predStr;
+    if (!pred) {
+      predStr = '<span style="color:#998">— לא ניחש —</span>';
+    } else {
+      predStr = pred.h + '–' + pred.a;
+      if (pred.et_h !== undefined) predStr += ' (הארכה ' + pred.et_h + '–' + pred.et_a + ')';
+      if (pred.pen_h !== undefined) predStr += ' (פנד׳ ' + pred.pen_h + '–' + pred.pen_a + ')';
+    }
+
+    // בנה את שורות הפירוט (90/הארכה/פנדלים) כצ׳יפים קטנים
+    var chips = bd.parts.map(function(p){
+      var icon, bg, fg;
+      if (p.kind === 'exact')      { icon='✓'; bg='var(--green-l)';  fg='var(--green)'; }
+      else if (p.kind === 'result'){ icon='~'; bg='var(--orange-l)'; fg='var(--orange)'; }
+      else                         { icon='✗'; bg='#fdecec';        fg='#c44'; }
+      return '<span style="display:inline-block;background:'+bg+';color:'+fg+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin:2px 3px 0 0">' +
+        icon + ' ' + p.label + (p.raw > 0 ? ' +' + p.raw : '') + '</span>';
+    }).join('');
+
+    var multNote = bd.mult !== 1
+      ? '<span style="font-size:10px;color:var(--muted)">× שלב ' + stageLabel[m.stage] + ' (×' + bd.mult + ')</span>'
+      : '<span style="font-size:10px;color:var(--muted)">' + stageLabel[m.stage] + '</span>';
+
+    return '<div style="background:var(--bg2);border:1px solid var(--border);border-right:4px solid '+color+';border-radius:10px;padding:10px 12px;margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-weight:800;font-size:13px;color:var(--text)">' + m.hf + ' ' + m.home + ' – ' + m.away + ' ' + m.af + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' +
+            '<b style="color:var(--text2)">תוצאה:</b> ' + resStr + ' &nbsp;·&nbsp; <b style="color:var(--text2)">ניחוש:</b> ' + predStr +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:left;flex-shrink:0">' +
+          '<div style="font-weight:900;font-size:18px;color:'+color+'">' + (bd.total > 0 ? '+'+bd.total : '0') + '</div>' +
+          multNote +
+        '</div>' +
+      '</div>' +
+      (chips ? '<div style="margin-top:6px">' + chips + '</div>' : '') +
+    '</div>';
+  }).join('');
+
+  // ── ניקוד אלופה (אם קיים והוכרע הגמר) ──
+  var champPart = '';
+  var champPoints = 0;
+  var finalMatch = MATCHES.find(function(m){ return m.stage === 'FINAL' && m.result; });
+  if (finalMatch && user.champBet && user.champBet.teamId) {
+    // חישוב הזוכה בגמר
+    var winner = null;
+    if (finalMatch.resultPen && finalMatch.resultPen.h !== finalMatch.resultPen.a)
+      winner = finalMatch.resultPen.h > finalMatch.resultPen.a ? finalMatch.home : finalMatch.away;
+    else if (finalMatch.resultET && finalMatch.resultET.h !== finalMatch.resultET.a)
+      winner = finalMatch.resultET.h > finalMatch.resultET.a ? finalMatch.home : finalMatch.away;
+    else if (finalMatch.result.h !== finalMatch.result.a)
+      winner = finalMatch.result.h > finalMatch.result.a ? finalMatch.home : finalMatch.away;
+
+    var betTeam = T(user.champBet.teamId);
+    var betName = betTeam ? betTeam.name : user.champBet.teamId;
+    var hit = winner && betName === winner;
+    var possible = champPts(user.champBet.stage);
+    if (hit) champPoints = possible;
+
+    var color = hit ? 'var(--gold)' : '#998';
+    champPart = '<div style="background:'+(hit?'var(--gold-l)':'var(--bg3)')+';border:1px solid '+(hit?'var(--gold)':'var(--border)')+';border-right:4px solid '+color+';border-radius:10px;padding:10px 12px;margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:800;font-size:13px;color:var(--text)">🏆 הימור אלופה' + (betTeam ? ' — ' + betTeam.flag + ' ' + betTeam.name : '') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' +
+            '<b style="color:var(--text2)">זוכה:</b> ' + (winner || '—') + ' &nbsp;·&nbsp; ' + champLabel(user.champBet.stage) +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:left">' +
+          '<div style="font-weight:900;font-size:18px;color:'+color+'">' + (hit ? '+'+possible : '0') + '</div>' +
+          '<div style="font-size:10px;color:var(--muted)">' + (hit ? 'פגיעה!' : 'מתוך ' + possible) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── נקודות ידניות (שאלות בונוס) — מוצגות כשורה אחת של סה"כ בסיכום העליון ──
+  var manualPoints = (typeof PARTICIPANT_MANUAL_POINTS !== 'undefined')
+    ? (PARTICIPANT_MANUAL_POINTS[user.id] || 0) : 0;
+
+  var totalShown = matchPoints + champPoints + manualPoints;
+
+  document.getElementById('bd-name').textContent = user.name;
+  document.getElementById('bd-subtitle').textContent = 'פירוט ניקוד · ' + finished.length + ' משחקים הסתיימו';
+  document.getElementById('bd-total').textContent = totalShown;
+  document.getElementById('bd-summary').innerHTML =
+    '<span>⚽ ממשחקים: <b style="color:var(--text)">' + matchPoints + '</b></span>' +
+    (champPart ? '<span>🏆 אלופה: <b style="color:var(--text)">' + champPoints + '</b></span>' : '') +
+    '<span>📝 בונוס: <b style="color:var(--text)">' + manualPoints + '</b></span>' +
+    '<span>🎯 פגיעות: <b style="color:var(--text)">' + hits + '/' + finished.length + '</b></span>' +
+    (bestMatch.pts > 0 ? '<span>⭐ הכי טוב: <b style="color:var(--text)">+' + bestMatch.pts + '</b></span>' : '');
+
+  document.getElementById('bd-list').innerHTML = champPart + rows;
+  document.getElementById('bd-modal').style.display = 'block';
+}
+
+function closeBreakdownModal(e) {
+  if (e.target === document.getElementById('bd-modal'))
+    document.getElementById('bd-modal').style.display = 'none';
+}
+
 function mHTML(m) {
   var pred   = D.predictions[m.id];
   var done   = !!m.result;
@@ -1119,7 +1405,7 @@ function mHTML(m) {
 
   var badge = '';
   if (done && pts !== null)
-    badge = '<div class="mbadge" style="background:' + (pts>=10?'#00e87a':pts>=5?'#f5a623':'#ff4d6a') + ';color:#000">' + (pts>0?'\u2713 '+pts+' נק\'':'\u2717 0') + '</div>';
+    badge = '<div class="mbadge" style="background:' + (pts>=100?'#00e87a':pts>0?'#f5a623':'#ff4d6a') + ';color:#000">' + (pts>0?'\u2713 '+pts+' נק\'':'\u2717 0') + '</div>';
   else if (locked && !done)
     badge = '<div class="mbadge" style="background:#2a2a3a;color:#778">' + (lbl||'🔒') + '</div>';
 
@@ -1161,13 +1447,13 @@ function mHTML(m) {
 
     if (isKO) {
       formBlock +=
-        '<div style="font-size:10px;color:var(--orange);margin:6px 0 3px">\uD83D\uDD50 הארכה <span style="color:var(--muted)">(+15/+8 נק\')</span></div>' +
+        '<div style="font-size:10px;color:var(--orange);margin:6px 0 3px">\uD83D\uDD50 הארכה <span style="color:var(--muted)">(+150/+80 נק\')</span></div>' +
         '<div class="minputs">' +
           '<input class="si" id="meh-' + m.id + '" type="number" min="0" max="20" style="border-color:#ff9d3a44">' +
           '<span class="msep" style="color:#3a3020">–</span>' +
           '<input class="si" id="mea-' + m.id + '" type="number" min="0" max="20" style="border-color:#ff9d3a44">' +
         '</div>' +
-        '<div style="font-size:10px;color:var(--cyan);margin:6px 0 3px">\uD83E\uDD45 פנדלים <span style="color:var(--muted)">(+20/+10 נק\')</span></div>' +
+        '<div style="font-size:10px;color:var(--cyan);margin:6px 0 3px">\uD83E\uDD45 פנדלים <span style="color:var(--muted)">(+200/+100 נק\')</span></div>' +
         '<div class="minputs">' +
           '<input class="si" id="mph-' + m.id + '" type="number" min="0" max="20" style="border-color:#3de8e044">' +
           '<span class="msep" style="color:#102a2a">–</span>' +
@@ -1447,9 +1733,18 @@ function myManualPoints() {
 //  CHAMPION BET
 // ──────────────────────────────────────────────
 function renderTeamGrid() {
-  var searchEl = document.getElementById('team-search');
-  var s = searchEl ? searchEl.value : '';
   var g=document.getElementById('team-grid'); if(!g) return;
+  var searchEl = document.getElementById('team-search');
+  var win = champWindow();
+
+  if (!win.open) {
+    if (searchEl) searchEl.style.display = 'none';
+    g.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:12px;line-height:1.6;padding:16px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px">\uD83D\uDD12 ' + win.reason + '</div>';
+    return;
+  }
+  if (searchEl) searchEl.style.display = '';
+
+  var s = searchEl ? searchEl.value : '';
   g.innerHTML=TEAMS.filter(function(t) { return t.name.includes(s)||!s; }).map(function(t) {
     var sel=D.champSel===t.id;
     return '<button class="tbtn' + (sel?' sel':'') + '" onclick="selTeam(\'' + t.id + '\')">' +
@@ -1458,35 +1753,55 @@ function renderTeamGrid() {
 }
 
 function selTeam(id) {
+  var win = champWindow();
+  if (!win.open) { pop('\uD83D\uDD12 ' + win.reason, '#ff4d6a'); return; }
   D.champSel=id;
   renderTeamGrid();
   var btn=document.getElementById('champ-save-btn');
   btn.style.display='block';
   var team = T(id);
   if(D.champBet && id===D.champBet.teamId) btn.textContent='\u2713 נשמר כבר';
-  else if(D.champBet) btn.textContent='\uD83D\uDD04 שנה ל-' + (team?team.name:'') + ' \u00B7 ' + CHAMP_PTS[CURRENT_STAGE] + ' נק\'';
-  else btn.textContent='\u2713 שמור הימור אלוף';
+  else if(D.champBet) btn.textContent='\uD83D\uDD04 שנה ל-' + (team?team.name:'') + ' \u00B7 ' + champPts(win.stage) + ' נק\'';
+  else btn.textContent='\u2713 שמור הימור אלוף \u00B7 ' + champPts(win.stage) + ' נק\'';
 }
 
 async function saveChampion() {
   var tid=D.champSel; if(!tid) return;
+  var win = champWindow();
+  if (!win.open) { pop('\uD83D\uDD12 ' + win.reason, '#ff4d6a'); return; }
   if(D.champBet) D.champHistory.push({teamId:D.champBet.teamId, stage:D.champBet.stage});
-  D.champBet={teamId:tid,stage:CURRENT_STAGE};
+  D.champBet={teamId:tid,stage:win.stage};
   await syncD();
   var t=T(tid);
-  pop('\uD83C\uDFC6 ' + t.flag + ' ' + t.name + ' \u00B7 ' + CHAMP_PTS[CURRENT_STAGE] + ' נק\'','#ffd04a');
+  pop('\uD83C\uDFC6 ' + t.flag + ' ' + t.name + ' \u00B7 ' + champPts(win.stage) + ' נק\'','#ffd04a');
   renderChampSection();
 }
 
 function renderChampSection() {
+  var win = champWindow();
+
+  // תווית שלב + ניקוד נוכחי בראש הכרטיס
+  var stageLbl = document.getElementById('champ-stage-lbl');
+  var ptsLbl   = document.getElementById('champ-pts-lbl');
+  if (stageLbl) stageLbl.textContent = win.open ? champLabel(win.stage) : '\uD83D\uDD12 נעול';
+  if (ptsLbl) {
+    if (win.open)               ptsLbl.textContent = champPts(win.stage);
+    else if (D.champBet)        ptsLbl.textContent = champPts(D.champBet.stage);
+    else                        ptsLbl.textContent = '—';
+  }
+
+  // כפתור השמירה — מוסתר כשנעול
+  var saveBtn = document.getElementById('champ-save-btn');
+  if (saveBtn && !win.open) saveBtn.style.display = 'none';
+
   var cur=document.getElementById('champ-cur');
   if(D.champBet){
     var t=T(D.champBet.teamId);
     cur.style.display='flex';
     cur.innerHTML='<span style="font-size:28px">' + t.flag + '</span>' +
       '<div><div style="font-weight:800;color:var(--gold);font-size:14px">' + t.name + '</div>' +
-      '<div style="font-size:11px;color:#776">' + CHAMP_LABEL[D.champBet.stage] + '</div></div>' +
-      '<span class="badge" style="margin-right:auto;color:var(--gold);border-color:#ffd04a44;background:#ffd04a11">' + CHAMP_PTS[D.champBet.stage] + ' נק\'</span>';
+      '<div style="font-size:11px;color:#776">' + champLabel(D.champBet.stage) + '</div></div>' +
+      '<span class="badge" style="margin-right:auto;color:var(--gold);border-color:#ffd04a44;background:#ffd04a11">' + champPts(D.champBet.stage) + ' נק\'</span>';
   } else { cur.style.display='none'; }
 
   var hist=document.getElementById('champ-hist');
@@ -1497,17 +1812,17 @@ function renderChampSection() {
           return '<div class="hist-entry">' +
             '<span style="font-size:18px">' + t.flag + '</span>' +
             '<div style="flex:1"><div style="font-size:13px;color:#aaa">' + t.name + '</div>' +
-            '<div style="font-size:10px;color:var(--muted)">' + CHAMP_LABEL[h.stage] + '</div></div>' +
-            '<span style="color:#665;font-size:12px;font-weight:700">' + CHAMP_PTS[h.stage] + ' נק\'</span>' +
+            '<div style="font-size:10px;color:var(--muted)">' + champLabel(h.stage) + '</div></div>' +
+            '<span style="color:#665;font-size:12px;font-weight:700">' + champPts(h.stage) + ' נק\'</span>' +
           '</div>';
         }).join('')
     : '';
 
-  document.getElementById('sr-table').innerHTML=Object.entries(CHAMP_PTS).map(function(entry) {
-    var s = entry[0], p = entry[1];
-    return '<div class="sr' + (s===CURRENT_STAGE?' cur':'') + '">' +
-      '<span>' + (s===CURRENT_STAGE?'\u25B6 ':'') + CHAMP_LABEL[s] + '</span>' +
-      '<span style="font-weight:700">' + p + ' נק\'</span>' +
+  document.getElementById('sr-table').innerHTML=Object.keys(CHAMP_PTS).map(function(s) {
+    var isCur = win.open && s === win.stage;
+    return '<div class="sr' + (isCur?' cur':'') + '">' +
+      '<span>' + (isCur?'\u25B6 ':'') + champLabel(s) + '</span>' +
+      '<span style="font-weight:700">' + CHAMP_PTS[s] + ' נק\'</span>' +
     '</div>';
   }).join('');
   renderTeamGrid();
@@ -1694,10 +2009,16 @@ function shareLeaderboardWA() {
   window.open(url, '_blank');
 }
 
+// מפת ניקוד ידני לפי משתמש — נשמרת בעת רינדור הטבלה כדי שתהיה זמינה למודאל הפירוט
+var PARTICIPANT_MANUAL_POINTS = {};
+
 async function renderLeaderboard() {
   var rows = await DB.getLeaderboard();
   var manualMap = await getManualPointsMap();
+  PARTICIPANT_MANUAL_POINTS = manualMap || {};
   rows.forEach(function(r){ r.score = (r.score||0) + (manualMap[r.id]||0); });
+  // ודא ש-LEADERS_DATA מעודכן עבור המודאל גם אם פותחים מיד אחרי טעינה
+  LEADERS_DATA = rows;
   var sorted = rows.sort(function(a,b) { return b.score-a.score; });
   var medals=['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
   var myRank = sorted.findIndex(function(r) { return r.email===CUR_USER.email; })+1;
@@ -1706,7 +2027,7 @@ async function renderLeaderboard() {
   document.getElementById('lb-list').innerHTML=sorted.map(function(u,i) {
     var t = u.champion ? T(u.champion) : null;
     var isMe = u.email===CUR_USER.email;
-    return '<div class="lbrow' + (isMe?' me':'') + '">' +
+    return '<div class="lbrow' + (isMe?' me':'') + '" onclick="showBreakdown(\'' + u.id + '\')" style="cursor:pointer">' +
       '<div class="lb-medal" style="font-size:' + (i<3?20:12) + 'px;font-weight:700;color:var(--muted);width:26px;text-align:center">' + (i<3?medals[i]:'#'+(i+1)) + '</div>' +
       '<div style="font-size:22px">' + (u.av||'\uD83D\uDC64') + '</div>' +
       '<div style="flex:1">' +
@@ -1717,6 +2038,7 @@ async function renderLeaderboard() {
         '<div style="font-size:19px;font-weight:900;color:' + (i===0?'var(--gold)':i===1?'#c0c0c0':i===2?'#cd7f32':'#667') + '">' + u.score + '</div>' +
         '<div style="font-size:9px;color:var(--muted)">נק\'</div>' +
       '</div>' +
+      '<div style="color:var(--muted);font-size:14px;margin-right:4px">›</div>' +
     '</div>';
   }).join('');
 
@@ -1728,7 +2050,7 @@ async function renderLeaderboard() {
     ["פנדלים מדויק","200 x שלב","#3de8e0"],
     ["פנדלים מנצח","100 x שלב","#3de8e0"],
     ["שאלות בונוס","ידני","#4d8fff"],
-    ["אלוף מונדיאל","100-500 נק","#ffd04a"],
+    ["אלוף מונדיאל","900-3000 נק","#ffd04a"],
     ["מלך שערים","50+30 נק","#ff5c8a"],
     ["מלך בישולים","50+30 נק","#3de8e0"],
   ];
