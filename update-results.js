@@ -174,6 +174,34 @@ async function fetchMatches() {
 }
 
 
+// ── ניקוד הימור אלופה ────────────────────────────────────────────
+//  כולל מפתחות חדשים (start/postR32/postR16) וגם ישנים לתאימות לאחור.
+var CHAMP_PTS = {
+  start:   3000, postR32: 1800, postR16: 900,        // חלונות חדשים
+  groups:  3000, r16:     1800, quarters: 900, semis: 450,  // ישנים (legacy fallback)
+};
+
+// teamId (מ-TEAMS באתר) → שם עברי כפי שמופיע בטבלת matches
+var TEAM_ID_TO_HE = {
+  ARG:'ארגנטינה', BRA:'ברזיל', ESP:'ספרד', GER:'גרמניה',
+  FRA:'צרפת', ENG:'אנגליה', POR:'פורטוגל', NED:'הולנד',
+  MAR:'מרוקו', JPN:'יפן', MEX:'מקסיקו', POL:'פולין',
+  USA:'ארה״ב', CAN:'קנדה', SEN:'סנגל', URU:'אורוגוואי',
+};
+
+// מחזיר את שם הזוכה במשחק הגמר (פנדלים > הארכה > 90'), או null אם אין גמר מוכרע
+function finalWinnerName(allMatches) {
+  var f = allMatches.find(function(m){ return m.stage === 'FINAL' && m.home_score !== null; });
+  if (!f) return null;
+  if (f.home_score_pen !== null && f.away_score_pen !== null && f.home_score_pen !== f.away_score_pen)
+    return f.home_score_pen > f.away_score_pen ? f.home_team : f.away_team;
+  if (f.home_score_et !== null && f.away_score_et !== null && f.home_score_et !== f.away_score_et)
+    return f.home_score_et > f.away_score_et ? f.home_team : f.away_team;
+  if (f.home_score !== f.away_score)
+    return f.home_score > f.away_score ? f.home_team : f.away_team;
+  return null;
+}
+
 // ── חישוב ניקוד (זהה ל-clientCalcPts באתר) ──────────────────────
 var BASE_PTS   = { exact_90:100, result_90:50, exact_et:150, result_et:80, exact_pen:200, winner_pen:100 };
 var STAGE_MULT = { GROUP_STAGE:1, LAST_32:1.5, LAST_16:2, QUARTER_FINALS:3, SEMI_FINALS:4, THIRD_PLACE:4, FINAL:5 };
@@ -204,6 +232,44 @@ function calcPoints(pred, result, resultET, resultPen, stage) {
   }
 
   return Math.round(raw * mult);
+}
+
+// ── ולידציה: בדיקת עקביות לוגית של תוצאה לפני כתיבה ל-DB ─────────
+//  מחזיר מערך של הודעות שגיאה. מערך ריק = התוצאה תקינה.
+//  חוקי כדורגל:
+//    • אם יש פנדלים → חייבת להיות הארכה, ההארכה חייבת להיות תיקו,
+//      והפנדלים חייבים הכרעה (לא תיקו).
+//    • אם יש הארכה בלי פנדלים → ההארכה חייבת הכרעה (אחרת זה היה הולך לפנדלים).
+//    • תוצאת ההארכה (סוף 120') לא יכולה להיות נמוכה מתוצאת 90 הדקות.
+function validateScore(p) {
+  var errors = [];
+  var hasET  = p.home_score_et  !== undefined && p.home_score_et  !== null;
+  var hasPen = p.home_score_pen !== undefined && p.home_score_pen !== null;
+
+  if (hasPen) {
+    if (!hasET) {
+      errors.push('יש פנדלים אבל אין תוצאת הארכה');
+    } else if (p.home_score_et !== p.away_score_et) {
+      errors.push('פנדלים קיימים אך ההארכה הוכרעה (' + p.home_score_et + '–' + p.away_score_et +
+        ') — אם יש מנצח בהארכה לא הולכים לפנדלים');
+    }
+    if (p.home_score_pen === p.away_score_pen) {
+      errors.push('פנדלים בתיקו (' + p.home_score_pen + '–' + p.away_score_pen +
+        ') — דו-קרב פנדלים חייב הכרעה');
+    }
+  }
+
+  if (hasET && !hasPen && p.home_score_et === p.away_score_et) {
+    errors.push('הארכה בתיקו (' + p.home_score_et + '–' + p.away_score_et +
+      ') ללא פנדלים — חסרה הכרעה');
+  }
+
+  if (hasET && (p.home_score_et < p.home_score || p.away_score_et < p.away_score)) {
+    errors.push('תוצאת ההארכה (' + p.home_score_et + '–' + p.away_score_et +
+      ') נמוכה מתוצאת 90 הדקות (' + p.home_score + '–' + p.away_score + ')');
+  }
+
+  return errors;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -237,6 +303,7 @@ async function main() {
   // שלב 3: התאם ועדכן תוצאות
   // ──────────────────────────────────────────────────
   var updated = 0;
+  var skipped = 0;
 
   for (var i = 0; i < apiMatches.length; i++) {
     var am = apiMatches[i];
@@ -296,6 +363,15 @@ async function main() {
       patch.away_score_pen = am.score.penalties.away;
     }
 
+    // ── ולידציה: אל תכתוב נתונים לא-עקביים ל-DB ──
+    var problems = validateScore(patch);
+    if (problems.length) {
+      console.log('   ⛔ דילגתי (נתונים לא עקביים): ' + dbMatch.home_team + ' מול ' + dbMatch.away_team);
+      problems.forEach(function (e) { console.log('       • ' + e); });
+      skipped++;
+      continue;
+    }
+
     // עדכן ב-Supabase
     await sbPatch('matches', 'id=eq.' + dbMatch.id, patch);
     updated++;
@@ -304,7 +380,8 @@ async function main() {
       (patch.home_score_pen !== undefined ? ' (פנד: ' + patch.home_score_pen + '–' + patch.away_score_pen + ')' : ''));
   }
 
-  console.log('\n📝 עודכנו ' + updated + ' תוצאות חדשות');
+  console.log('\n📝 עודכנו ' + updated + ' תוצאות חדשות' +
+    (skipped ? ('  |  ⛔ ' + skipped + ' דולגו עקב נתונים לא עקביים') : ''));
 
   // ──────────────────────────────────────────────────
   // שלב 4: חשב מחדש ניקוד לכל המשתמשים (ממשחקים בלבד)
@@ -322,6 +399,10 @@ async function main() {
   // טען את כל המשתמשים
   var allUsers = await sbGet('user_data', 'select=*');
   console.log('👥 ' + allUsers.length + ' משתמשים');
+
+  // מי האלופה? (null כל עוד הגמר לא הוכרע)
+  var champWinner = finalWinnerName(allMatches);
+  if (champWinner) console.log('🏆 אלופת הטורניר: ' + champWinner + ' — מחשב בונוסי הימור אלופה');
 
   for (var u = 0; u < allUsers.length; u++) {
     var user = allUsers[u];
@@ -353,8 +434,14 @@ async function main() {
       totalScore += calcPoints(pred, result, resultET, resultPen, fdStage);
     }
 
-    // ניקוד מהימור אלוף (נבדק רק בסוף הטורניר)
-    // TODO: בסוף הטורניר, בדוק אם champBet.teamId === הזוכה
+    // ניקוד מהימור אלופה — מתווסף רק אם הגמר הוכרע והאלופה שנבחרה ניצחה.
+    //   הניקוד נקבע לפי החלון (stage) שבו ננעל ההימור: ככל שמוקדם יותר, יותר נקודות.
+    if (champWinner && user.champ_bet && user.champ_bet.teamId) {
+      var betName = TEAM_ID_TO_HE[user.champ_bet.teamId] || user.champ_bet.teamId;
+      if (betName === champWinner) {
+        totalScore += (CHAMP_PTS[user.champ_bet.stage] || 0);
+      }
+    }
 
     // עדכן
     if (user.score !== totalScore) {
